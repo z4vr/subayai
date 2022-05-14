@@ -1,0 +1,15 @@
+discord:
+  token: ""
+  owner: ""
+
+logging:
+  level: 4
+  colors: true
+
+lavalink:
+  authorization:
+  host:
+  port:
+
+fio:
+  fiopath: ""
