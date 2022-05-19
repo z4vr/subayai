@@ -2,18 +2,19 @@ package main
 
 import (
 	"flag"
-	"github.com/z4vr/subayai/internal/util/static"
 	"os"
 	"os/signal"
 	"runtime/pprof"
 	"syscall"
 
+	"github.com/z4vr/subayai/internal/util/static"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/config"
-	"github.com/z4vr/subayai/internal/database"
 	"github.com/z4vr/subayai/internal/inits"
+	"github.com/z4vr/subayai/internal/services/config"
+	"github.com/z4vr/subayai/internal/services/database"
 )
 
 var (

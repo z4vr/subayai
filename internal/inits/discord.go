@@ -3,8 +3,8 @@ package inits
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
-	"github.com/z4vr/subayai/internal/config"
 	"github.com/z4vr/subayai/internal/events"
+	"github.com/z4vr/subayai/internal/services/config"
 	static2 "github.com/z4vr/subayai/internal/util/static"
 )
 

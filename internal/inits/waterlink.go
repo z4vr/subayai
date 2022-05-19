@@ -2,12 +2,13 @@ package inits
 
 import (
 	"fmt"
+
 	"github.com/z4vr/subayai/internal/util/static"
 
 	"github.com/lukasl-dev/waterlink/v2"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/config"
+	"github.com/z4vr/subayai/internal/services/config"
 )
 
 type WaterlinkProvider struct {
@@ -25,9 +26,8 @@ func NewWaterlinkProvider(ctn di.Container) (p *WaterlinkProvider) {
 		Authorization: cfg.Instance().Lavalink.Authorization,
 	}
 
-	p.wlClient, err = waterlink.NewClient(fmt.Sprintf("http://%s:%d",
-		cfg.Instance().Lavalink.Host,
-		cfg.Instance().Lavalink.Port), creds)
+	p.wlClient, err = waterlink.NewClient(fmt.Sprintf("http://%s",
+		cfg.Instance().Lavalink.Host), creds)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create waterlink client")
 	}

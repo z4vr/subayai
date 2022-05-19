@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/bwmarrin/discordgo v0.25.0
 	github.com/heetch/confita v0.10.0
+	github.com/lib/pq v1.10.6
 	github.com/lukasl-dev/waterlink/v2 v2.0.0
 	github.com/sarulabs/di v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.8.1
@@ -16,7 +17,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gompus/snowflake v0.0.4 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/pkg/errors v0.8.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
