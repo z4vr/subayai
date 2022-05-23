@@ -1,28 +1,8 @@
 package config
 
-import (
-	"os/user"
-
-	"github.com/z4vr/subayai/internal/models"
-)
-
-var currentUser, _ = user.Current()
+import "github.com/z4vr/subayai/internal/models"
 
 type Provider interface {
-	Load() error
-	Instance() *models.Config
-}
-
-type baseProvider struct {
-	instance *models.Config
-}
-
-func newBaseProvider() *baseProvider {
-	return &baseProvider{
-		instance: models.DefaultConfig,
-	}
-}
-
-func (p *baseProvider) Instance() *models.Config {
-	return p.instance
+	Config() *models.Config
+	Parse() error
 }

@@ -1,58 +1,58 @@
 package models
 
-import (
-	"github.com/sirupsen/logrus"
-)
-
-var DefaultConfig = &Config{
-	Discord: Discord{
+var DefaultConfig = Config{
+	Discord: DiscordConfig{
 		Token:   "",
-		OwnerId: "",
+		OwnerID: "",
 	},
-	Log: Log{
-		Level:  logrus.InfoLevel,
-		Colors: true,
+	Logrus: LogrusConfig{
+		Level: "info",
+		Color: true,
 	},
-	Database: DatabaseType{
-		Type:     "postgres",
-		Postgres: DatabaseCreds{},
+	Database: DatabaseConfig{
+		Type: "postgres",
+		Postgres: PostgresConfig{
+			Host: "localhost",
+			Port: 5432,
+		},
 	},
-	Lavalink: Lavalink{
+	Lavalink: LavalinkConfig{
 		Authorization: "",
 		Host:          "",
 	},
 }
 
-type Discord struct {
-	Token   string `config:"token,required"`
-	OwnerId string `config:"ownerid"`
+type DiscordConfig struct {
+	Token   string `config:"token"`
+	OwnerID string `config:"ownerid"`
 }
 
-type Log struct {
-	Level  logrus.Level `config:"level"`
-	Colors bool         `config:"colors"`
+type LogrusConfig struct {
+	Level string `config:"level"`
+	Color bool   `config:"color"`
 }
 
-type DatabaseType struct {
-	Type     string        `config:"type"`
-	Postgres DatabaseCreds `config:"postgres"`
+type DatabaseConfig struct {
+	Type     string         `config:"type"`
+	Postgres PostgresConfig `config:"postgres"`
 }
 
-type DatabaseCreds struct {
-	Host     string `config:"host"`
-	User     string `config:"user"`
-	Password string `config:"password"`
-	Database string `config:"database"`
+type PostgresConfig struct {
+	Host     string `config:"postgres.host"`
+	Port     int    `config:"postgres.port"`
+	Database string `config:"postgres.database"`
+	Username string `config:"postgres.username"`
+	Password string `config:"postgres.password"`
 }
 
-type Lavalink struct {
-	Authorization string `config:"authorization"`
-	Host          string `config:"host"`
+type LavalinkConfig struct {
+	Authorization string `config:"lavalink.authorization"`
+	Host          string `config:"lavalink.host"`
 }
 
 type Config struct {
-	Discord  Discord      `config:"discord"`
-	Log      Log          `config:"log"`
-	Database DatabaseType `json:"database"`
-	Lavalink Lavalink     `config:"lavalink"`
+	Discord  DiscordConfig  `config:"discord"`
+	Logrus   LogrusConfig   `config:"logrus"`
+	Database DatabaseConfig `config:"database"`
+	Lavalink LavalinkConfig `config:"lavalink"`
 }

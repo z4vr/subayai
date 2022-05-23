@@ -14,12 +14,12 @@ func InitDatabase(ctn di.Container) database.Database {
 	var err error
 
 	cfg := ctn.Get(static.DiConfigProvider).(config.Provider)
-	switch cfg.Instance().Database.Type {
+	switch cfg.Config().Database.Type {
 	case "postgres":
 		db = new(postgres.PGMiddleware)
-		err = db.Connect(cfg.Instance().Database.Postgres)
+		err = db.Connect(cfg.Config().Database.Postgres)
 	default:
-		logrus.Fatalf("Unknown database type: %s", cfg.Instance().Database.Type)
+		logrus.Fatalf("Unknown database type: %s", cfg.Config().Database.Type)
 	}
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed connecting to database")

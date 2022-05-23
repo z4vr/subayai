@@ -11,7 +11,7 @@ import (
 func NewDiscordSession(ctn di.Container) (session *discordgo.Session, err error) {
 	cfg := ctn.Get(static2.DiConfigProvider).(config.Provider)
 
-	session, err = discordgo.New("Bot " + cfg.Instance().Discord.Token)
+	session, err = discordgo.New("Bot " + cfg.Config().Discord.Token)
 	if err != nil {
 		return
 	}

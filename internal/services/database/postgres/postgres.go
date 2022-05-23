@@ -3,10 +3,10 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"github.com/z4vr/subayai/internal/models"
 	"strings"
 
 	_ "github.com/lib/pq"
-	"github.com/z4vr/subayai/internal/models"
 	"github.com/z4vr/subayai/internal/services/database"
 )
 
@@ -17,13 +17,14 @@ type PGMiddleware struct {
 var _ database.Database = (*PGMiddleware)(nil)
 
 func (p *PGMiddleware) setup() (err error) {
-	if err = p.Db.Ping(); err != nil {
-		return
+	// ping the database to make sure it's up
+	if err := p.Db.Ping(); err != nil {
+		return err
 	}
 
 	tx, err := p.Db.Begin()
 	if err != nil {
-		return
+		return err
 	}
 
 	// create guild table
@@ -93,26 +94,24 @@ func (p *PGMiddleware) setup() (err error) {
 		return
 	}
 
-	return
+	return tx.Commit()
 }
 
 func (p *PGMiddleware) Connect(credentials ...interface{}) (err error) {
-	creds := credentials[0].(models.DatabaseCreds)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s",
-		creds.User, creds.Password, creds.Host, creds.Database)
-
-	if p.Db, err = sql.Open("p", dsn); err != nil {
-		return
+	// connect to the database
+	creds := credentials[0].(models.PostgresConfig)
+	pgi := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		creds.Host, creds.Port, creds.Username, creds.Password, creds.Database)
+	db, err := sql.Open("postgres", pgi)
+	if err != nil {
+		return err
 	}
 
-	err = p.setup()
-	return
-}
+	// set the database
+	p.Db = db
 
-func (p *PGMiddleware) Close() {
-	if p.Db != nil {
-		p.Db.Close()
-	}
+	// set up the database
+	return p.setup()
 }
 
 func (p *PGMiddleware) getGuildSetting(guildID, setting string) (value string, err error) {
@@ -169,27 +168,27 @@ func (p *PGMiddleware) SetGuildBotMessageChannelID(guildID, value string) (err e
 }
 
 // GetGuildLevelUpMessage returns the level up message for the guild
-func (p *PGMiddleware) GetGuildLevelUpMessage(guildID string) (value string, err error) {
+func (p *PGMiddleware) GetGuildLevelUpMessage(guildID string) (message string, err error) {
 	return p.getGuildSetting(guildID, "level_up_message")
 }
 
 // SetGuildLevelUpMessage sets the level up message for the guild
-func (p *PGMiddleware) SetGuildLevelUpMessage(guildID, value string) (err error) {
-	return p.setGuildSetting(guildID, "level_up_message", value)
+func (p *PGMiddleware) SetGuildLevelUpMessage(guildID, message string) (err error) {
+	return p.setGuildSetting(guildID, "level_up_message", message)
 }
 
-// GetGuildAfkChannelID returns the afk channel ID for the guild
-func (p *PGMiddleware) GetGuildAfkChannelID(guildID string) (value string, err error) {
+// GetGuildAFKChannelID returns the afk channel ID for the guild
+func (p *PGMiddleware) GetGuildAFKChannelID(guildID string) (channelID string, err error) {
 	return p.getGuildSetting(guildID, "afk_channel_id")
 }
 
-// SetGuildAfkChannelID sets the afk channel ID for the guild
-func (p *PGMiddleware) SetGuildAfkChannelID(guildID, value string) (err error) {
-	return p.setGuildSetting(guildID, "afk_channel_id", value)
+// SetGuildAFKChannelID sets the afk channel ID for the guild
+func (p *PGMiddleware) SetGuildAFKChannelID(guildID, channelID string) (err error) {
+	return p.setGuildSetting(guildID, "afk_channel_id", channelID)
 }
 
 // GetGuildAutoroleIDs returns the autorole IDs for the guild
-func (p *PGMiddleware) GetGuildAutoroleIDs(guildID string) (value []string, err error) {
+func (p *PGMiddleware) GetGuildAutoroleIDs(guildID string) (roleIDs []string, err error) {
 
 	roleString, err := p.getGuildSetting(guildID, "autorole_ids")
 	if err != nil {
@@ -202,8 +201,8 @@ func (p *PGMiddleware) GetGuildAutoroleIDs(guildID string) (value []string, err 
 }
 
 // SetGuildAutoroleIDs sets the autorole IDs for the guild
-func (p *PGMiddleware) SetGuildAutoroleIDs(guildID string, value []string) (err error) {
-	roleString := strings.Join(value, ";")
+func (p *PGMiddleware) SetGuildAutoroleIDs(guildID string, roleIDs []string) error {
+	roleString := strings.Join(roleIDs, ";")
 	return p.setGuildSetting(guildID, "autorole_ids", roleString)
 }
 
@@ -241,4 +240,13 @@ func (p *PGMiddleware) setUserSetting(userID, setting, value string) (err error)
 		}
 	}
 	return
+}
+
+func (p *PGMiddleware) Close() {
+	if p.Db != nil {
+		err := p.Db.Close()
+		if err != nil {
+			return
+		}
+	}
 }

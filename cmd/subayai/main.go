@@ -47,8 +47,7 @@ func main() {
 	diBuilder.Add(di.Def{
 		Name: static.DiConfigProvider,
 		Build: func(ctn di.Container) (interface{}, error) {
-			p := config.NewConfitaProvider(*flagConfigPath)
-			return p, p.Load()
+			return config.NewPaerser(*flagConfigPath), nil
 		},
 	})
 
@@ -74,11 +73,18 @@ func main() {
 
 	// Building object map
 	ctn := diBuilder.Build()
-
 	cfg := ctn.Get(static.DiConfigProvider).(config.Provider)
-	logrus.SetLevel(logrus.Level(cfg.Instance().Log.Level))
+	if err := cfg.Parse(); err != nil {
+		logrus.WithError(err).Fatal("Failed to parse config")
+	}
+	level, err := logrus.ParseLevel(cfg.Config().Logrus.Level)
+	if err != nil {
+		logrus.WithError(err).Warn("Failed to parse logrus level, using default")
+		level = logrus.InfoLevel
+	}
+	logrus.SetLevel(level)
 	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     true,
+		ForceColors:     cfg.Config().Logrus.Color,
 		TimestampFormat: "02-01-2006 15:04:05",
 		FullTimestamp:   true,
 	})
