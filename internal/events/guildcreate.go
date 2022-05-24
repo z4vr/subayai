@@ -18,4 +18,5 @@ func NewGuildCreateEvent(ctn di.Container) *GuildCreateEvent {
 }
 
 func (g *GuildCreateEvent) Handler(session *discordgo.Session, event *discordgo.GuildCreate) {
+
 }

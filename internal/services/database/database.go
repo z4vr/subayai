@@ -15,13 +15,22 @@ type Database interface {
 	SetGuildBotMessageChannelID(guildID, channelID string) error
 
 	GetGuildLevelUpMessage(guildID string) (message string, err error)
-	SetGuildLevelUpMessage(guildID, message string) error
+	SetGuildLevelUpMessage(guildID, message string) (err error)
 
 	GetGuildAFKChannelID(guildID string) (channelID string, err error)
-	SetGuildAFKChannelID(guildID, channelID string) error
+	SetGuildAFKChannelID(guildID, channelID string) (err error)
 
 	GetGuildAutoroleIDs(guildID string) (roleIDs []string, err error)
-	SetGuildAutoroleIDs(guildID string, roleIDs []string) error
+	SetGuildAutoroleIDs(guildID string, roleIDs []string) (err error)
+
+	GetUserLevel(userID, guildID string) (level int, err error)
+	SetUserLevel(userID, guildID string, level int) (err error)
+
+	GetUserCurrentXP(userID, guildID string) (xp int, err error)
+	SetUserCurrentXP(userID, guildID string, xp int) (err error)
+
+	GetUserTotalXP(userID, guildID string) (xp int, err error)
+	SetUserTotalXP(userID, guildID string, xp int) (err error)
 
 	Close()
 }

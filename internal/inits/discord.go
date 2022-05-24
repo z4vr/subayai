@@ -19,10 +19,10 @@ func NewDiscordSession(ctn di.Container) (session *discordgo.Session, err error)
 	session.Identify.Intents = discordgo.MakeIntent(static2.Intents)
 
 	session.AddHandler(events.NewReadyEvent().Handler)
-	session.AddHandler(events.NewMessageCreateEvent(ctn).Handler)
+	session.AddHandler(events.NewMessageCreateEvent(ctn).HandlerXP)
 	session.AddHandler(events.NewGuildCreateEvent(ctn).Handler)
 	session.AddHandler(events.NewGuildDeleteEvent(ctn).Handler)
-	session.AddHandler(events.NewGuildMemberAddEvent(ctn).Handler)
+	session.AddHandler(events.NewGuildMemberAddEvent(ctn).HandlerAutoRole)
 
 	return
 }

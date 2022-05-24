@@ -57,9 +57,9 @@ func (p *PGMiddleware) setup() (err error) {
 		"entry_id" serial NOT NULL,
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
-		"level" integer NOT NULL,
-		"currentxp" integer NOT NULL,
-		"totalxp" integer NOT NULL,
+		"level" integer NOT NULL DEFAULT 0,
+		"current_xp" integer NOT NULL DEFAULT 0,
+		"total_xp" integer NOT NULL DEFAULT 0,
 		PRIMARY KEY ("entry_id"));
 	`)
 	if err != nil {
@@ -201,7 +201,7 @@ func (p *PGMiddleware) GetGuildAutoroleIDs(guildID string) (roleIDs []string, er
 }
 
 // SetGuildAutoroleIDs sets the autorole IDs for the guild
-func (p *PGMiddleware) SetGuildAutoroleIDs(guildID string, roleIDs []string) error {
+func (p *PGMiddleware) SetGuildAutoroleIDs(guildID string, roleIDs []string) (err error) {
 	roleString := strings.Join(roleIDs, ";")
 	return p.setGuildSetting(guildID, "autorole_ids", roleString)
 }
@@ -240,6 +240,72 @@ func (p *PGMiddleware) setUserSetting(userID, setting, value string) (err error)
 		}
 	}
 	return
+}
+
+func (p *PGMiddleware) getLevelSetting(userID, guildID, setting string) (value int, err error) {
+
+	err = p.Db.QueryRow(`
+	SELECT `+setting+` FROM level WHERE user_id = $1 AND guild_id = $2;
+	`, userID, guildID).Scan(&value)
+
+	err = wrapNotFound(err)
+
+	return
+}
+
+func (p *PGMiddleware) setLevelSetting(userID, guildID, setting string, value int) (err error) {
+
+	res, err := p.Db.Exec(`
+	UPDATE level SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
+	`, value, userID, guildID)
+	if err != nil {
+		return
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return
+	}
+
+	if rows == 0 {
+		_, err = p.Db.Exec(`
+		INSERT INTO level (user_id, guild_id, `+setting+`) VALUES ($1, $2, $3);
+		`, userID, guildID, value)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+// GetUserLevel returns the level for the user
+func (p *PGMiddleware) GetUserLevel(userID, guildID string) (level int, err error) {
+	return p.getLevelSetting(userID, guildID, "level")
+}
+
+// SetUserLevel sets the level for the user
+func (p *PGMiddleware) SetUserLevel(userID, guildID string, level int) (err error) {
+	return p.setLevelSetting(userID, guildID, "level", level)
+}
+
+// GetUserCurrentXP returns the current xp for the user
+func (p *PGMiddleware) GetUserCurrentXP(userID, guildID string) (xp int, err error) {
+	return p.getLevelSetting(userID, guildID, "current_xp")
+}
+
+// SetUserCurrentXP sets the current xp for the user
+func (p *PGMiddleware) SetUserCurrentXP(userID, guildID string, xp int) (err error) {
+	return p.setLevelSetting(userID, guildID, "current_xp", xp)
+}
+
+// GetUserTotalXP returns the total xp for the user
+func (p *PGMiddleware) GetUserTotalXP(userID, guildID string) (xp int, err error) {
+	return p.getLevelSetting(userID, guildID, "total_xp")
+}
+
+// SetUserTotalXP sets the total xp for the user
+func (p *PGMiddleware) SetUserTotalXP(userID, guildID string, xp int) (err error) {
+	return p.setLevelSetting(userID, guildID, "total_xp", xp)
 }
 
 func (p *PGMiddleware) Close() {

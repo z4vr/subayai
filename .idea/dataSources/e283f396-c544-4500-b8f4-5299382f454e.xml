@@ -3,17 +3,9 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.39">
     <root id="1">
       <DateStyle>mdy</DateStyle>
-      <Grants>1||-9223372036854775808|c|G
-1||10|c|G
-1||10|C|G
-1||10|T|G
-13756||-9223372036854775808|c|G
-13756||10|c|G
-13756||10|C|G
-13756||10|T|G</Grants>
-      <IntrospectionStateNumber>737</IntrospectionStateNumber>
+      <IntrospectionStateNumber>745</IntrospectionStateNumber>
       <ServerVersion>14.3</ServerVersion>
-      <StartupTime>1653333302</StartupTime>
+      <StartupTime>1653415901</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -1408,11 +1400,11 @@ true posixrules
 13391||10|C|G
 13391||-9223372036854775808|U|G
 13391||10|U|G</Grants>
-      <IntrospectionStateNumber>737</IntrospectionStateNumber>
+      <IntrospectionStateNumber>747</IntrospectionStateNumber>
       <ObjectId>16384</ObjectId>
-      <Relations>sequence|table|16401|16402|1
-sequence|table|16408|16409|1
+      <Relations>sequence|table|16408|16409|1
 sequence|table|16415|16416|1
+sequence|table|24577|24578|1
 </Relations>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4833,7 +4825,7 @@ sequence|table|16415|16416|1
     <schema id="262" parent="3" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>737</IntrospectionStateNumber>
+      <IntrospectionStateNumber>747</IntrospectionStateNumber>
       <ObjectId>2200</ObjectId>
       <StateNumber>527</StateNumber>
       <OwnerName>postgres</OwnerName>
@@ -4846,8 +4838,8 @@ sequence|table|16415|16416|1
     </sequence>
     <sequence id="264" parent="262" name="level_entry_id_seq">
       <DataType>integer|0s</DataType>
-      <ObjectId>16401</ObjectId>
-      <StateNumber>736</StateNumber>
+      <ObjectId>24577</ObjectId>
+      <StateNumber>746</StateNumber>
       <OwnerName>postgres</OwnerName>
     </sequence>
     <sequence id="265" parent="262" name="timestamp_entry_id_seq">
@@ -4869,8 +4861,8 @@ sequence|table|16415|16416|1
       <OwnerName>postgres</OwnerName>
     </table>
     <table id="268" parent="262" name="level">
-      <ObjectId>16402</ObjectId>
-      <StateNumber>736</StateNumber>
+      <ObjectId>24578</ObjectId>
+      <StateNumber>746</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>postgres</OwnerName>
     </table>
@@ -5002,60 +4994,63 @@ sequence|table|16415|16416|1
       <DefaultExpression>nextval(&apos;level_entry_id_seq&apos;::regclass)</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <StateNumber>736</StateNumber>
+      <StateNumber>746</StateNumber>
       <TypeId>23</TypeId>
     </column>
     <column id="286" parent="268" name="user_id">
       <DataType>varchar(25)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
-      <StateNumber>736</StateNumber>
+      <StateNumber>746</StateNumber>
       <TypeId>1043</TypeId>
     </column>
     <column id="287" parent="268" name="guild_id">
       <DataType>varchar(25)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>3</Position>
-      <StateNumber>736</StateNumber>
+      <StateNumber>746</StateNumber>
       <TypeId>1043</TypeId>
     </column>
     <column id="288" parent="268" name="level">
       <DataType>integer|0s</DataType>
+      <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>4</Position>
-      <StateNumber>736</StateNumber>
+      <StateNumber>746</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="289" parent="268" name="currentxp">
+    <column id="289" parent="268" name="current_xp">
       <DataType>integer|0s</DataType>
+      <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>5</Position>
-      <StateNumber>736</StateNumber>
+      <StateNumber>746</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="290" parent="268" name="totalxp">
+    <column id="290" parent="268" name="total_xp">
       <DataType>integer|0s</DataType>
+      <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>6</Position>
-      <StateNumber>736</StateNumber>
+      <StateNumber>746</StateNumber>
       <TypeId>23</TypeId>
     </column>
     <index id="291" parent="268" name="level_pkey">
       <ColNames>entry_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>16406</ObjectId>
+      <ObjectId>24585</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>736</StateNumber>
+      <StateNumber>746</StateNumber>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
     <key id="292" parent="268" name="level_pkey">
       <ColNames>entry_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>16407</ObjectId>
+      <ObjectId>24586</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>736</StateNumber>
-      <UnderlyingIndexId>16406</UnderlyingIndexId>
+      <StateNumber>746</StateNumber>
+      <UnderlyingIndexId>24585</UnderlyingIndexId>
     </key>
     <column id="293" parent="269" name="entry_id">
       <DataType>integer|0s</DataType>
