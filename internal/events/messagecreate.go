@@ -8,6 +8,8 @@ import (
 	"github.com/z4vr/subayai/internal/util/static"
 	"github.com/z4vr/subayai/internal/util/xp"
 	"math/rand"
+	"strconv"
+	"strings"
 )
 
 type MessageCreateEvent struct {
@@ -40,7 +42,7 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 
 	// generate random number between 25 and 85
 	earnedXP := rand.Intn(60) + 25
-	xpData.AddXP(earnedXP)
+	levelup := xp.AddXP(xpData, earnedXP, false)
 
 	err = xp.UpdateUserXP(xpData, m.db)
 	if err != nil {
@@ -48,6 +50,53 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 			"gid": event.GuildID,
 			"uid": event.Author.ID,
 		}).WithError(err).Error("Failed to update user xp")
+	}
+
+	if levelup {
+		channelID, err := m.db.GetGuildBotMessageChannelID(event.GuildID)
+		if err != nil && err == database.ErrValueNotFound {
+			logrus.WithFields(logrus.Fields{
+				"gid": event.GuildID,
+				"uid": event.Author.ID,
+			}).WithError(err).Error("Failed to get bot message channel id")
+			err = m.db.SetGuildBotMessageChannelID(event.GuildID, event.ChannelID)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"gid": event.GuildID,
+					"uid": event.Author.ID,
+				}).WithError(err).Error("Failed to set bot message channel id")
+			}
+			logrus.WithFields(logrus.Fields{
+				"gid": event.GuildID,
+				"cid": event.ChannelID,
+			}).Warn("Set bot message channel id -> setup yourself")
+			channelID = event.ChannelID
+		} else if channelID == "" {
+			channelID = event.ChannelID
+		}
+		levelupMessage, err := m.db.GetGuildLevelUpMessage(event.GuildID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"gid": event.GuildID,
+				"uid": event.Author.ID,
+			}).WithError(err).Error("Failed to get level up message")
+			return
+		}
+
+		levelupMessage = strings.Replace(levelupMessage, "{user}", event.Author.Mention(), -1)
+		levelupMessage = strings.Replace(levelupMessage, "{level}", strconv.Itoa(xpData.Level), -1)
+
+		_, err = session.ChannelMessageSend(channelID, levelupMessage)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"gid": event.GuildID,
+				"uid": event.Author.ID,
+				"cid": channelID,
+			}).WithError(err).Error("Failed to send level up message")
+		}
+
+		return
+
 	}
 
 	return

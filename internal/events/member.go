@@ -52,7 +52,7 @@ func (g *GuildMemberAddEvent) HandlerAutoRole(session *discordgo.Session, event 
 
 func (g *GuildMemberAddEvent) HandlerSetupLevelEntry(session *discordgo.Session, event *discordgo.GuildMemberAdd) {
 	_, err := xp.GetUserXP(event.User.ID, event.GuildID, g.db)
-	if err != nil {
+	if err != nil && err == database.ErrValueNotFound {
 		logrus.WithError(err).WithField("gid", event.GuildID).WithField("uid",
 			event.User.ID).Error("Failed getting user xp")
 		_, err = xp.GenerateUserXP(event.GuildID, event.User.ID, g.db)

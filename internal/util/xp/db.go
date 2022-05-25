@@ -2,11 +2,12 @@ package xp
 
 import (
 	"github.com/sirupsen/logrus"
+	"github.com/z4vr/subayai/internal/models"
 	"github.com/z4vr/subayai/internal/services/database"
 )
 
 // GetUserXP returns the user's XP data.
-func GetUserXP(userID, guildID string, db database.Database) (*UserXP, error) {
+func GetUserXP(userID, guildID string, db database.Database) (*models.UserXP, error) {
 
 	level, err := db.GetUserLevel(userID, guildID)
 	if err != nil {
@@ -33,15 +34,15 @@ func GetUserXP(userID, guildID string, db database.Database) (*UserXP, error) {
 		return nil, err
 	}
 
-	xpData := New(userID, guildID, currentXP, totalXP, level)
+	xpData := models.New(userID, guildID, currentXP, totalXP, level)
 
 	return xpData, nil
 }
 
 // GenerateUserXP generates the user's XP data with default values.
-func GenerateUserXP(userID, guildID string, db database.Database) (*UserXP, error) {
+func GenerateUserXP(userID, guildID string, db database.Database) (*models.UserXP, error) {
 
-	xpData := New(userID, guildID, 0, 0, 0)
+	xpData := models.New(userID, guildID, 0, 0, 0)
 
 	err := db.SetUserCurrentXP(userID, guildID, xpData.CurrentXP)
 	if err != nil {
@@ -73,7 +74,7 @@ func GenerateUserXP(userID, guildID string, db database.Database) (*UserXP, erro
 }
 
 // UpdateUserXP updates the user's XP data.
-func UpdateUserXP(xpData *UserXP, db database.Database) (err error) {
+func UpdateUserXP(xpData *models.UserXP, db database.Database) (err error) {
 
 	err = db.SetUserCurrentXP(xpData.UserID, xpData.GuildID, xpData.CurrentXP)
 	if err != nil {

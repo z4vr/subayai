@@ -4,21 +4,13 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a47d35ca-26f3-42f1-a208-29c4c2837b28" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/internal/util/xp/db.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/util/xp/model.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/util/xp/xp.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/e283f396-c544-4500-b8f4-5299382f454e.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/e283f396-c544-4500-b8f4-5299382f454e.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/e283f396-c544-4500-b8f4-5299382f454e/storage_v2/_src_/database/subayai.oIimkA/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/e283f396-c544-4500-b8f4-5299382f454e/storage_v2/_src_/database/subayai.oIimkA/schema/public.abK9xQ.meta" afterDir="false" />
+    <list default="true" id="a47d35ca-26f3-42f1-a208-29c4c2837b28" name="Changes" comment="leveling in the works, database backend works">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/guildcreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/guildcreate.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/membercreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/member.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/events/member.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/member.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/events/messagecreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/messagecreate.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/inits/discord.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/inits/discord.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/database/database.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/database/database.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/permissions/permarray.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/permissions/permissions.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/util/xp/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/util/xp/db.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/util/xp/model.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/models/xp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/util/xp/xp.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/util/xp/xp.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -77,6 +69,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Michael\dev\subayai\internal\models" />
       <recent name="C:\Users\Michael\dev\subayai\internal\util" />
       <recent name="C:\Users\Michael\dev\subayai" />
     </key>
@@ -114,6 +107,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="leveling in the works, database backend works" />
+    <option name="LAST_COMMIT_MESSAGE" value="leveling in the works, database backend works" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

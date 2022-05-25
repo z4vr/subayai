@@ -1,4 +1,4 @@
-package xp
+package models
 
 type UserXP struct {
 	UserID    string
