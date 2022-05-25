@@ -4,6 +4,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
+	"github.com/z4vr/subayai/internal/models"
 	"github.com/z4vr/subayai/internal/services/database"
 	"github.com/z4vr/subayai/internal/util/static"
 	"github.com/z4vr/subayai/internal/util/xp"
@@ -23,6 +24,14 @@ func NewMessageCreateEvent(ctn di.Container) *MessageCreateEvent {
 }
 
 func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discordgo.MessageCreate) {
+
+	var (
+		channelID      string
+		levelUpMessage string
+		xpData         *models.XPData
+		err            error
+	)
+
 	if event.Author.ID == session.State.User.ID {
 		return
 	}
@@ -31,16 +40,21 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 		return
 	}
 
-	xpData, err := xp.GetUserXP(event.Author.ID, event.GuildID, m.db)
-	if err != nil {
+	xpData, err = xp.GetUserXP(event.Author.ID, event.GuildID, m.db)
+	if err != nil && err == database.ErrValueNotFound {
 		logrus.WithFields(logrus.Fields{
 			"gid": event.GuildID,
 			"uid": event.Author.ID,
 		}).WithError(err).Error("Failed to get user xp")
-		xpData, err = xp.GenerateUserXP(event.Author.ID, event.GuildID, m.db)
+		xpData = &models.XPData{
+			UserID:    event.Author.ID,
+			GuildID:   event.GuildID,
+			CurrentXP: 0,
+			TotalXP:   0,
+			Level:     0,
+		}
 	}
 
-	// generate random number between 25 and 85
 	earnedXP := rand.Intn(60) + 25
 	levelup := xp.AddXP(xpData, earnedXP, false)
 
@@ -53,7 +67,7 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 	}
 
 	if levelup {
-		channelID, err := m.db.GetGuildBotMessageChannelID(event.GuildID)
+		channelID, err = m.db.GetGuildBotMessageChannelID(event.GuildID)
 		if err != nil && err == database.ErrValueNotFound {
 			logrus.WithFields(logrus.Fields{
 				"gid": event.GuildID,
@@ -74,19 +88,21 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 		} else if channelID == "" {
 			channelID = event.ChannelID
 		}
-		levelupMessage, err := m.db.GetGuildLevelUpMessage(event.GuildID)
+		levelUpMessage, err = m.db.GetGuildLevelUpMessage(event.GuildID)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"gid": event.GuildID,
 				"uid": event.Author.ID,
 			}).WithError(err).Error("Failed to get level up message")
+			levelUpMessage = "Well done {user}, your Level of wasting time just advanced to {level}!"
+		} else if levelUpMessage == "" {
 			return
 		}
 
-		levelupMessage = strings.Replace(levelupMessage, "{user}", event.Author.Mention(), -1)
-		levelupMessage = strings.Replace(levelupMessage, "{level}", strconv.Itoa(xpData.Level), -1)
+		levelUpMessage = strings.Replace(levelUpMessage, "{user}", event.Author.Mention(), -1)
+		levelUpMessage = strings.Replace(levelUpMessage, "{level}", strconv.Itoa(xpData.Level), -1)
 
-		_, err = session.ChannelMessageSend(channelID, levelupMessage)
+		_, err = session.ChannelMessageSend(channelID, levelUpMessage)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"gid": event.GuildID,

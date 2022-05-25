@@ -1,9 +1,10 @@
 package models
 
 var DefaultConfig = Config{
-	Discord: DiscordConfig{
-		Token:   "",
-		OwnerID: "",
+	Bot: BotConfig{
+		Token:      "",
+		OwnerID:    "",
+		GuildLimit: -1,
 	},
 	Logrus: LogrusConfig{
 		Level: "info",
@@ -22,9 +23,10 @@ var DefaultConfig = Config{
 	},
 }
 
-type DiscordConfig struct {
-	Token   string `config:"token"`
-	OwnerID string `config:"ownerid"`
+type BotConfig struct {
+	Token      string `config:"token"`
+	OwnerID    string `config:"ownerid"`
+	GuildLimit int    `config:"guildlimit"`
 }
 
 type LogrusConfig struct {
@@ -51,7 +53,7 @@ type LavalinkConfig struct {
 }
 
 type Config struct {
-	Discord  DiscordConfig  `config:"discord"`
+	Bot      BotConfig      `config:"discord"`
 	Logrus   LogrusConfig   `config:"logrus"`
 	Database DatabaseConfig `config:"database"`
 	Lavalink LavalinkConfig `config:"lavalink"`

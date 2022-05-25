@@ -66,7 +66,7 @@ func main() {
 			return inits.NewDiscordSession(ctn)
 		},
 		Close: func(obj interface{}) error {
-			logrus.Info("Shutting down Discord connection...")
+			logrus.Info("Shutting down Bot connection...")
 			return obj.(*discordgo.Session).Close()
 		},
 	})
