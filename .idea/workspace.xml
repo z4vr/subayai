@@ -4,23 +4,14 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a47d35ca-26f3-42f1-a208-29c4c2837b28" name="Changes" comment="embed builder in the works!">
-      <change afterPath="$PROJECT_DIR$/internal/services/config/config.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/services/waterlink/provider.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/services/waterlink/waterlink.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_05_2022_18_21__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_05_2022_18_21__Changes_.xml" afterDir="false" />
+    <list default="true" id="a47d35ca-26f3-42f1-a208-29c4c2837b28" name="Changes" comment="working on waterlinkprovider">
+      <change afterPath="$PROJECT_DIR$/internal/services/waterlink/models.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/subayai/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/subayai/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/messagecreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/messagecreate.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/inits/discord.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/inits/discord.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/inits/waterlink.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/inits/waterlink.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/models/config.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/models/xp.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/config/paerser.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/config/paerser.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/config/provider.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/config/provider.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/util/xp/xp.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/util/xp/xp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/config/models.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/waterlink/provider.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/waterlink/waterlink.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/waterlink/waterlink.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/discordutils/discordutils.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/discordutils/discordutils.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,7 +122,8 @@
     <MESSAGE value="leveling in the works, database backend works" />
     <MESSAGE value="level up message works (kinda). need to figure out how to handle new guilds" />
     <MESSAGE value="embed builder in the works!" />
-    <option name="LAST_COMMIT_MESSAGE" value="embed builder in the works!" />
+    <MESSAGE value="working on waterlinkprovider" />
+    <option name="LAST_COMMIT_MESSAGE" value="working on waterlinkprovider" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="VgoProject">

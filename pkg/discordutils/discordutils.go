@@ -43,3 +43,43 @@ func SendEmbedMessageDM(session *discordgo.Session, userID string, embed *discor
 	msg, err = session.ChannelMessageSendEmbed(ch.ID, embed)
 	return
 }
+
+// FindUserVS returns the voice state of the specified user in the specified guild.
+func FindUserVS(session *discordgo.Session, userID string) (discordgo.VoiceState, bool) {
+	for _, g := range session.State.Guilds {
+		for _, vs := range g.VoiceStates {
+			for vs.UserID == userID {
+				return *vs, true
+			}
+		}
+	}
+	return discordgo.VoiceState{}, false
+}
+
+// UsersInGuildVoice returns a list of users in the specified voice channel.
+func UsersInGuildVoice(session *discordgo.Session, guildID string) ([]string, error) {
+	g, err := session.State.Guild(guildID)
+	if err != nil {
+		return nil, err
+	}
+
+	userIDs := make([]string, 0, len(g.VoiceStates))
+	for _, vs := range g.VoiceStates {
+		if vs.UserID != session.State.User.ID {
+			userIDs = append(userIDs, vs.UserID)
+		}
+	}
+
+	return userIDs, nil
+}
+
+// GetGuild returns the guild with the specified ID.
+func GetGuild(session *discordgo.Session, id string) (discordgo.Guild, error) {
+	guild, err := session.State.Guild(id)
+	if err == nil {
+		return *guild, nil
+	}
+
+	guild, err = session.Guild(id)
+	return *guild, err
+}

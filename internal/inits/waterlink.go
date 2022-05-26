@@ -9,12 +9,12 @@ import (
 	"github.com/z4vr/subayai/internal/util/static"
 )
 
-func NewWaterlinkProvider(ctn di.Container) *waterlink.WaterlinkProvider {
+func NewWaterlinkProvider(ctn di.Container) *waterlink.Waterlink {
 
 	cfg := ctn.Get(static.DiConfigProvider).(config.Provider)
 	session := ctn.Get(static.DiDiscordSession).(*discordgo.Session)
 
-	w, err := waterlink.NewWaterlinkProvider(session,
+	w, err := waterlink.New(session,
 		waterlink.WaterlinkConfig{Host: cfg.Config().Lavalink.Host, Password: cfg.Config().Lavalink.Password})
 
 	if err != nil {
