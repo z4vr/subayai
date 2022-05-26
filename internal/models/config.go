@@ -53,7 +53,7 @@ type LavalinkConfig struct {
 }
 
 type Config struct {
-	Bot      BotConfig      `config:"discord"`
+	Bot      BotConfig      `config:"bot"`
 	Logrus   LogrusConfig   `config:"logrus"`
 	Database DatabaseConfig `config:"database"`
 	Lavalink LavalinkConfig `config:"lavalink"`

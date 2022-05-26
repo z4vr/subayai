@@ -23,10 +23,12 @@ const (
 
 	// BOT STATICS
 
-	ColorEmbedError   = 0xd32f2f
+	ColorEmbedRed     = 0xd32f2f
 	ColorEmbedDefault = 0x249ff2
-	ColorEmbedGray    = 0xb0bec5
 	ColorEmbedGreen   = 0x8bc34a
+	ColorEmbedYellow  = 0xffeb3b
+
+	AppIcon = "https://raw.githubusercontent.com/z4vr/subayai/main/assets/app-icon.jpg"
 
 	// EMOJIS
 

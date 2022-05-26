@@ -44,23 +44,31 @@ func main() {
 
 	// Register dependencies
 	// register config
-	diBuilder.Add(di.Def{
+	err = diBuilder.Add(di.Def{
 		Name: static.DiConfigProvider,
 		Build: func(ctn di.Container) (interface{}, error) {
 			return config.NewPaerser(*flagConfigPath), nil
 		},
 	})
+	if err != nil {
+		logrus.WithError(err).Panic("Error initializing Config Provider")
+		return
+	}
 
 	//Register database
-	diBuilder.Add(di.Def{
+	err = diBuilder.Add(di.Def{
 		Name: static.DiDatabase,
 		Build: func(ctn di.Container) (interface{}, error) {
 			return inits.InitDatabase(ctn), nil
 		},
 	})
+	if err != nil {
+		logrus.WithError(err).Panic("Error initializing Database")
+		return
+	}
 
 	// register discord session
-	diBuilder.Add(di.Def{
+	err = diBuilder.Add(di.Def{
 		Name: static.DiDiscordSession,
 		Build: func(ctn di.Container) (interface{}, error) {
 			return inits.NewDiscordSession(ctn)
@@ -70,6 +78,10 @@ func main() {
 			return obj.(*discordgo.Session).Close()
 		},
 	})
+	if err != nil {
+		logrus.WithError(err).Panic("Error initializing Discord Session")
+		return
+	}
 
 	// Building object map
 	ctn := diBuilder.Build()

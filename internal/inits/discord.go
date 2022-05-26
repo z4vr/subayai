@@ -23,7 +23,7 @@ func NewDiscordSession(ctn di.Container) (session *discordgo.Session, err error)
 	// Message handlers
 	session.AddHandler(events.NewMessageCreateEvent(ctn).HandlerXP)
 	// Guild create handlers
-	session.AddHandler(events.NewGuildCreateEvent(ctn).HandlerCreate)
+	//session.AddHandler(events.NewGuildCreateEvent(ctn).HandlerCreate)
 	// Guild delete handlers
 	session.AddHandler(events.NewGuildDeleteEvent(ctn).Handler)
 	// Guild member add handlers

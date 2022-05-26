@@ -8,6 +8,7 @@ import (
 	"github.com/z4vr/subayai/internal/services/database"
 	"github.com/z4vr/subayai/internal/util/static"
 	"github.com/z4vr/subayai/internal/util/xp"
+	"github.com/z4vr/subayai/pkg/embedify"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -102,7 +103,11 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 		levelUpMessage = strings.Replace(levelUpMessage, "{user}", event.Author.Mention(), -1)
 		levelUpMessage = strings.Replace(levelUpMessage, "{level}", strconv.Itoa(xpData.Level), -1)
 
-		_, err = session.ChannelMessageSend(channelID, levelUpMessage)
+		emb := embedify.New().
+			SetAuthor(event.Author.Username, static.AppIcon).
+			SetDescription(levelUpMessage).Build()
+
+		_, err = session.ChannelMessageSendEmbed(channelID, emb)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"gid": event.GuildID,
