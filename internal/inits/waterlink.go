@@ -1,39 +1,27 @@
 package inits
 
 import (
-	"fmt"
-	"github.com/z4vr/subayai/internal/services/config"
-
-	"github.com/z4vr/subayai/internal/util/static"
-
-	"github.com/lukasl-dev/waterlink/v2"
+	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
+	"github.com/z4vr/subayai/internal/services/config"
+	"github.com/z4vr/subayai/internal/services/waterlink"
+	"github.com/z4vr/subayai/internal/util/static"
 )
 
-type WaterlinkProvider struct {
-	wlClient *waterlink.Client
-}
+func NewWaterlinkProvider(ctn di.Container) *waterlink.WaterlinkProvider {
 
-func NewWaterlinkProvider(ctn di.Container) (p *WaterlinkProvider) {
-
-	var err error
-
-	p = &WaterlinkProvider{}
 	cfg := ctn.Get(static.DiConfigProvider).(config.Provider)
+	session := ctn.Get(static.DiDiscordSession).(*discordgo.Session)
 
-	creds := waterlink.Credentials{
-		Authorization: cfg.Config().Lavalink.Authorization,
-	}
+	w, err := waterlink.NewWaterlinkProvider(session,
+		waterlink.WaterlinkConfig{Host: cfg.Config().Lavalink.Host, Password: cfg.Config().Lavalink.Password})
 
-	p.wlClient, err = waterlink.NewClient(fmt.Sprintf("http://%s",
-		cfg.Config().Lavalink.Host), creds)
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to create waterlink client")
+		logrus.Fatal("Failed to create waterlink provider: ", err)
+		return nil
 	}
 
-	// TODO: finish up the lavalink provider
-
-	return
+	return w
 
 }

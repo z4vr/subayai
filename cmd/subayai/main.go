@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"os/signal"
+	"path"
 	"runtime/pprof"
 	"syscall"
 
@@ -18,7 +19,7 @@ import (
 )
 
 var (
-	flagConfigPath = flag.String("config", "./config.yaml", "Path to config file")
+	flagConfigPath = flag.String("config", "config.yaml", "Path to config file")
 	flagCPUProfile = flag.String("cpuprofile", "", "Path to write CPU profile")
 )
 
@@ -47,7 +48,7 @@ func main() {
 	err = diBuilder.Add(di.Def{
 		Name: static.DiConfigProvider,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return config.NewPaerser(*flagConfigPath), nil
+			return config.NewPaerser(path.Join(*flagConfigPath)), nil
 		},
 	})
 	if err != nil {

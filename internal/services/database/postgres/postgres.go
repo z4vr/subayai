@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"github.com/z4vr/subayai/internal/models"
+	"github.com/z4vr/subayai/internal/services/config"
 	"strings"
 
 	_ "github.com/lib/pq"
@@ -99,7 +99,7 @@ func (p *PGMiddleware) setup() (err error) {
 
 func (p *PGMiddleware) Connect(credentials ...interface{}) (err error) {
 	// connect to the database
-	creds := credentials[0].(models.PostgresConfig)
+	creds := credentials[0].(config.PostgresConfig)
 	pgi := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		creds.Host, creds.Port, creds.Username, creds.Password, creds.Database)
 	db, err := sql.Open("postgres", pgi)

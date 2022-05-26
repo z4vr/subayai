@@ -6,11 +6,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/traefik/paerser/env"
 	"github.com/traefik/paerser/file"
-	"github.com/z4vr/subayai/internal/models"
 )
 
 type Paerser struct {
-	cfg        *models.Config
+	cfg        *Config
 	configFile string
 }
 
@@ -20,12 +19,12 @@ func NewPaerser(configFile string) *Paerser {
 	}
 }
 
-func (p *Paerser) Config() *models.Config {
+func (p *Paerser) Config() *Config {
 	return p.cfg
 }
 
 func (p *Paerser) Parse() (err error) {
-	cfg := models.DefaultConfig
+	cfg := DefaultConfig
 
 	if err = file.Decode(p.configFile, &cfg); err != nil && !os.IsNotExist(err) {
 		return

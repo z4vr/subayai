@@ -4,7 +4,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/models"
 	"github.com/z4vr/subayai/internal/services/database"
 	"github.com/z4vr/subayai/internal/util/static"
 	"github.com/z4vr/subayai/internal/util/xp"
@@ -29,7 +28,7 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 	var (
 		channelID      string
 		levelUpMessage string
-		xpData         *models.XPData
+		xpData         *xp.XPData
 		err            error
 	)
 
@@ -47,7 +46,7 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 			"gid": event.GuildID,
 			"uid": event.Author.ID,
 		}).WithError(err).Error("Failed to get user xp")
-		xpData = &models.XPData{
+		xpData = &xp.XPData{
 			UserID:    event.Author.ID,
 			GuildID:   event.GuildID,
 			CurrentXP: 0,
@@ -57,7 +56,7 @@ func (m *MessageCreateEvent) HandlerXP(session *discordgo.Session, event *discor
 	}
 
 	earnedXP := rand.Intn(60) + 25
-	levelup := xp.AddXP(xpData, earnedXP, false)
+	levelup := xpData.AddXP(earnedXP, false)
 
 	err = xp.UpdateUserXP(xpData, m.db)
 	if err != nil {

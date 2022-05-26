@@ -5,18 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a47d35ca-26f3-42f1-a208-29c4c2837b28" name="Changes" comment="embed builder in the works!">
-      <change afterPath="$PROJECT_DIR$/pkg/embedify/embedify.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/services/config/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/services/waterlink/provider.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/services/waterlink/waterlink.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_05_2022_18_21__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_05_2022_18_21__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/subayai/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/subayai/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/guildcreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/guildcreate.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/events/messagecreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/messagecreate.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/inits/discord.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/inits/discord.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/models/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/models/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/util/static/di.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/util/static/di.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/util/static/static.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/util/static/static.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/embedify/embed.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/embedify/model.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/embedify/provider.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/inits/waterlink.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/inits/waterlink.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/models/config.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/models/xp.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/config/paerser.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/config/paerser.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/config/provider.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/config/provider.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/util/xp/xp.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/util/xp/xp.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,13 +71,13 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Michael&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Michael/dev/subayai&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;terminal&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -84,10 +88,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Michael\dev\subayai\internal\models" />
+      <recent name="C:\Users\Michael\dev\subayai\internal\util\xp" />
+      <recent name="C:\Users\Michael\dev\subayai\internal\services\config" />
       <recent name="C:\Users\Michael\dev\subayai\internal\services" />
+      <recent name="C:\Users\Michael\dev\subayai\internal\models" />
       <recent name="C:\Users\Michael\dev\subayai\internal\util" />
-      <recent name="C:\Users\Michael\dev\subayai" />
     </key>
   </component>
   <component name="RunManager">
