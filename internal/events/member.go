@@ -19,19 +19,19 @@ func NewGuildMemberAddEvent(ctn di.Container) *GuildMemberAddEvent {
 	}
 }
 
-func (g *GuildMemberAddEvent) HandlerAutoRole(session *discordgo.Session, event *discordgo.GuildMemberAdd) {
-	autoroleIDs, err := g.db.GetGuildAutoroleIDs(event.GuildID)
+func (g *GuildMemberAddEvent) HandlerAutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
+	autoroleIDs, err := g.db.GetGuildAutoroleIDs(e.GuildID)
 	if err != nil && err == database.ErrValueNotFound {
-		logrus.WithField("gid", event.GuildID).Warn("no autoroles found")
+		logrus.WithField("gid", e.GuildID).Warn("no autoroles found")
 	}
 	invalidAutoRoleIDs := make([]string, 0)
 	for _, rid := range autoroleIDs {
-		err = session.GuildMemberRoleAdd(event.GuildID, event.User.ID, rid)
+		err = s.GuildMemberRoleAdd(e.GuildID, e.User.ID, rid)
 		if apiErr, ok := err.(*discordgo.RESTError); ok && apiErr.Message.Code == discordgo.ErrCodeUnknownRole {
 			invalidAutoRoleIDs = append(invalidAutoRoleIDs, rid)
 		} else if err != nil {
-			logrus.WithError(err).WithField("gid", event.GuildID).WithField("uid",
-				event.User.ID).Error("Failed setting autorole for member")
+			logrus.WithError(err).WithField("gid", e.GuildID).WithField("uid",
+				e.User.ID).Error("Failed setting autorole for member")
 		}
 	}
 	if len(invalidAutoRoleIDs) > 0 {
@@ -41,10 +41,10 @@ func (g *GuildMemberAddEvent) HandlerAutoRole(session *discordgo.Session, event 
 				newAutoRoleIDs = append(newAutoRoleIDs, rid)
 			}
 		}
-		err = g.db.SetGuildAutoroleIDs(event.GuildID, newAutoRoleIDs)
+		err = g.db.SetGuildAutoroleIDs(e.GuildID, newAutoRoleIDs)
 		if err != nil {
-			logrus.WithError(err).WithField("gid", event.GuildID).WithField("uid",
-				event.User.ID).Error("Failed updating auto role settings")
+			logrus.WithError(err).WithField("gid", e.GuildID).WithField("uid",
+				e.User.ID).Error("Failed updating auto role settings")
 		}
 	}
 }

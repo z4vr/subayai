@@ -32,5 +32,17 @@ type Database interface {
 	GetUserTotalXP(userID, guildID string) (xp int, err error)
 	SetUserTotalXP(userID, guildID string, xp int) (err error)
 
+	GetLastMessageTimestamp(userID, guildID string) (timestamp int64, err error)
+	SetLastMessageTimestamp(userID, guildID string, timestamp int64) (err error)
+
+	GetLastVoiceSessionTimestamp(userID, guildID string) (timestamp int64, err error)
+	SetLastVoiceSessionTimestamp(userID, guildID string, timestamp int64) (err error)
+
+	GetLastMessageID(userID, guildID string) (id string, err error)
+	SetLastMessageID(userID, guildID string, id string) (err error)
+
+	GetLastVoiceSessionID(userID, guildID string) (id string, err error)
+	SetLastVoiceSessionID(userID, guildID string, id string) (err error)
+
 	Close()
 }

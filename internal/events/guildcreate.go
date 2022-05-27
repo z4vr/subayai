@@ -23,28 +23,28 @@ func NewGuildCreateEvent(ctn di.Container) *GuildCreateEvent {
 	}
 }
 
-func (g *GuildCreateEvent) HandlerCreate(session *discordgo.Session, event *discordgo.GuildCreate) {
+func (g *GuildCreateEvent) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) {
 
-	// TODO: log earlier guild joins to prevent triggering this event
+	// TODO: log earlier guild joins to prevent triggering this e
 
 	limit := g.cfg.Config().Bot.GuildLimit
 	if limit == -1 {
 		return
 	}
 
-	if len(session.State.Guilds) >= limit {
-		_, err := discordutils.SendMessageDM(session, event.OwnerID,
+	if len(s.State.Guilds) >= limit {
+		_, err := discordutils.SendMessageDM(s, e.OwnerID,
 			fmt.Sprintf("Sorry, the instance owner disallowed me to join more than %d guilds.", limit))
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{
-				"guild": event.ID,
+				"guild": e.ID,
 			}).Error("Failed to send message")
 			return
 		}
-		err = session.GuildLeave(event.ID)
+		err = s.GuildLeave(e.ID)
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{
-				"guild": event.ID,
+				"guild": e.ID,
 			}).Error("Failed to leave guild")
 		}
 

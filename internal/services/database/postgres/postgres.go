@@ -72,8 +72,8 @@ func (p *PGMiddleware) setup() (err error) {
 		"entry_id" serial NOT NULL,
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
-		"last_message_ts" timestamp NOT NULL,
-		"last_session_ts" timestamp NOT NULL,
+		"last_guild_message" timestamp NOT NULL,
+		"last_voice_session" timestamp NOT NULL,
 		PRIMARY KEY ("entry_id"));
 	`)
 	if err != nil {
@@ -86,8 +86,8 @@ func (p *PGMiddleware) setup() (err error) {
 		"entry_id" serial NOT NULL,
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
-		"last_message_id" varchar (25) NOT NULL,
-		"last_session_id" varchar (25) NOT NULL,
+		"last_guild_message" varchar (25) NOT NULL,
+		"last_voice_session" varchar (25) NOT NULL,
 		PRIMARY KEY ("entry_id"));
 	`)
 	if err != nil {
@@ -288,24 +288,136 @@ func (p *PGMiddleware) SetUserLevel(userID, guildID string, level int) (err erro
 	return p.setLevelSetting(userID, guildID, "level", level)
 }
 
-// GetUserCurrentXP returns the current xp for the user
+// GetUserCurrentXP returns the current level for the user
 func (p *PGMiddleware) GetUserCurrentXP(userID, guildID string) (xp int, err error) {
 	return p.getLevelSetting(userID, guildID, "current_xp")
 }
 
-// SetUserCurrentXP sets the current xp for the user
+// SetUserCurrentXP sets the current level for the user
 func (p *PGMiddleware) SetUserCurrentXP(userID, guildID string, xp int) (err error) {
 	return p.setLevelSetting(userID, guildID, "current_xp", xp)
 }
 
-// GetUserTotalXP returns the total xp for the user
+// GetUserTotalXP returns the total level for the user
 func (p *PGMiddleware) GetUserTotalXP(userID, guildID string) (xp int, err error) {
 	return p.getLevelSetting(userID, guildID, "total_xp")
 }
 
-// SetUserTotalXP sets the total xp for the user
+// SetUserTotalXP sets the total level for the user
 func (p *PGMiddleware) SetUserTotalXP(userID, guildID string, xp int) (err error) {
 	return p.setLevelSetting(userID, guildID, "total_xp", xp)
+}
+
+func (p *PGMiddleware) getTimestampSetting(userID, guildID, setting string) (value int64, err error) {
+
+	err = p.Db.QueryRow(`
+	SELECT `+setting+` FROM timestamp WHERE user_id = $1 AND guild_id = $2;
+	`, userID, guildID).Scan(&value)
+
+	err = wrapNotFound(err)
+
+	return
+}
+
+func (p *PGMiddleware) setTimestampSetting(userID, guildID, setting string, value int64) (err error) {
+
+	res, err := p.Db.Exec(`
+	UPDATE timestamp SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
+	`, value, userID, guildID)
+	if err != nil {
+		return
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return
+	}
+
+	if rows == 0 {
+		_, err = p.Db.Exec(`
+		INSERT INTO timestamp (user_id, guild_id, `+setting+`) VALUES ($1, $2, $3);
+		`, userID, guildID, value)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+// GetLastMessageTimestamp returns the timestamp of the last message sent by the user
+func (p *PGMiddleware) GetLastMessageTimestamp(userID, guildID string) (timestamp int64, err error) {
+	return p.getTimestampSetting(userID, guildID, "last_guild_message")
+}
+
+// SetLastMessageTimestamp sets the timestamp of the last message sent by the user
+func (p *PGMiddleware) SetLastMessageTimestamp(userID, guildID string, timestamp int64) (err error) {
+	return p.setTimestampSetting(userID, guildID, "last_guild_message", timestamp)
+}
+
+// GetLastVoiceSessionTimestamp returns the timestamp of the last voice session by the user
+func (p *PGMiddleware) GetLastVoiceSessionTimestamp(userID, guildID string) (timestamp int64, err error) {
+	return p.getTimestampSetting(userID, guildID, "last_voice_session")
+}
+
+// SetLastVoiceSessionTimestamp sets the timestamp of the last voice session by the user
+func (p *PGMiddleware) SetLastVoiceSessionTimestamp(userID, guildID string, timestamp int64) (err error) {
+	return p.setTimestampSetting(userID, guildID, "last_voice_session", timestamp)
+}
+
+func (p *PGMiddleware) getDiscordIDsSetting(userID, guildID, setting string) (value string, err error) {
+
+	err = p.Db.QueryRow(`
+	SELECT `+setting+` FROM discord_ids WHERE user_id = $1 AND guild_id = $2;
+	`, userID, guildID).Scan(&value)
+
+	err = wrapNotFound(err)
+
+	return
+}
+
+func (p *PGMiddleware) setDiscordIDsSetting(userID, guildID, setting string, value string) (err error) {
+
+	res, err := p.Db.Exec(`
+	UPDATE discord_ids SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
+	`, value, userID, guildID)
+	if err != nil {
+		return
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return
+	}
+
+	if rows == 0 {
+		_, err = p.Db.Exec(`
+		INSERT INTO discord_ids (user_id, guild_id, `+setting+`) VALUES ($1, $2, $3);
+		`, userID, guildID, value)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+// GetLastMessageID returns the last message id sent by the user
+func (p *PGMiddleware) GetLastMessageID(userID, guildID string) (id string, err error) {
+	return p.getDiscordIDsSetting(userID, guildID, "last_guild_message")
+}
+
+// SetLastMessageID sets the last message id sent by the user
+func (p *PGMiddleware) SetLastMessageID(userID, guildID string, id string) (err error) {
+	return p.setDiscordIDsSetting(userID, guildID, "last_guild_message", id)
+}
+
+// GetLastVoiceSessionID returns the last voice session id sent by the user
+func (p *PGMiddleware) GetLastVoiceSessionID(userID, guildID string) (id string, err error) {
+	return p.getDiscordIDsSetting(userID, guildID, "last_voice_session")
+}
+
+// SetLastVoiceSessionID sets the last voice session id sent by the user
+func (p *PGMiddleware) SetLastVoiceSessionID(userID, guildID string, id string) (err error) {
+	return p.setDiscordIDsSetting(userID, guildID, "last_voice_session", id)
 }
 
 func (p *PGMiddleware) Close() {

@@ -83,3 +83,14 @@ func GetGuild(session *discordgo.Session, id string) (discordgo.Guild, error) {
 	guild, err = session.Guild(id)
 	return *guild, err
 }
+
+// GetMember returns the user with the specified ID.
+func GetMember(session *discordgo.Session, userID, guildID string) (discordgo.Member, error) {
+	member, err := session.State.Member(guildID, userID)
+	if err == nil {
+		return *member, nil
+	}
+
+	member, err = session.GuildMember(guildID, userID)
+	return *member, err
+}

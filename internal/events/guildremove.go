@@ -17,5 +17,5 @@ func NewGuildDeleteEvent(ctn di.Container) *GuildDeleteEvent {
 	}
 }
 
-func (g *GuildDeleteEvent) Handler(session *discordgo.Session, event *discordgo.GuildDelete) {
+func (g *GuildDeleteEvent) Handler(s *discordgo.Session, e *discordgo.GuildDelete) {
 }

@@ -4,13 +4,21 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a47d35ca-26f3-42f1-a208-29c4c2837b28" name="Changes" comment="working on waterlinkprovider">
-      <change afterPath="$PROJECT_DIR$/internal/services/waterlink/models.go" afterDir="false" />
+    <list default="true" id="a47d35ca-26f3-42f1-a208-29c4c2837b28" name="Changes" comment="preparing voice stuff">
+      <change afterPath="$PROJECT_DIR$/internal/events/voicestateupdate.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/services/level/models.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/services/level/provider.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/e283f396-c544-4500-b8f4-5299382f454e.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/e283f396-c544-4500-b8f4-5299382f454e.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/inits/waterlink.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/inits/waterlink.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/config/models.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/waterlink/provider.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/services/waterlink/waterlink.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/waterlink/waterlink.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/events/guildcreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/guildcreate.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/events/guildremove.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/guildremove.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/events/member.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/member.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/events/messagecreate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/messagecreate.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/events/ready.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/events/ready.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/database/database.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/database/database.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/database/postgres/postgres.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/util/xp/db.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/util/xp/xp.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/services/level/xp.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/discordutils/discordutils.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/discordutils/discordutils.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -48,40 +56,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.format.on.save.advertiser.fired&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
-    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Michael/dev/subayai&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;terminal&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "DefaultGoTemplateProperty": "Go File",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.format.on.save.advertiser.fired": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "C:/Users/Michael/dev/subayai",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Michael\dev\subayai\internal\services" />
       <recent name="C:\Users\Michael\dev\subayai\internal\util\xp" />
       <recent name="C:\Users\Michael\dev\subayai\internal\services\config" />
-      <recent name="C:\Users\Michael\dev\subayai\internal\services" />
       <recent name="C:\Users\Michael\dev\subayai\internal\models" />
       <recent name="C:\Users\Michael\dev\subayai\internal\util" />
     </key>
@@ -123,7 +131,8 @@
     <MESSAGE value="level up message works (kinda). need to figure out how to handle new guilds" />
     <MESSAGE value="embed builder in the works!" />
     <MESSAGE value="working on waterlinkprovider" />
-    <option name="LAST_COMMIT_MESSAGE" value="working on waterlinkprovider" />
+    <MESSAGE value="preparing voice stuff" />
+    <option name="LAST_COMMIT_MESSAGE" value="preparing voice stuff" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="VgoProject">
