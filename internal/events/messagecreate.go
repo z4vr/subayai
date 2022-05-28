@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
@@ -26,6 +27,8 @@ func NewMessageCreateEvent(ctn di.Container) *MessageCreateEvent {
 }
 
 func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.MessageCreate) {
+
+	fmt.Println(1)
 
 	var (
 		channelID      string

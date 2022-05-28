@@ -10,7 +10,7 @@ type Database interface {
 	// GeneralL
 	Connect(credentials ...interface{}) error
 
-	// Guilds
+	// guilds
 	GetGuildBotMessageChannelID(guildID string) (channelID string, err error)
 	SetGuildBotMessageChannelID(guildID, channelID string) error
 

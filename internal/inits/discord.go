@@ -3,6 +3,7 @@ package inits
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
+	"github.com/z4vr/subayai/internal/events"
 	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/util/static"
 )
@@ -16,6 +17,18 @@ func NewDiscordSession(ctn di.Container) (session *discordgo.Session, err error)
 	}
 
 	session.Identify.Intents = discordgo.MakeIntent(static.Intents)
+
+	// Register handlers
+	// Ready handlers
+	session.AddHandler(events.NewReadyEvent().Handler)
+	// Message handlers
+	session.AddHandler(events.NewMessageCreateEvent(ctn).HandlerXP)
+	// Guild create handlers
+	//session.AddHandler(events.NewGuildCreateEvent(ctn).HandlerCreate)
+	// Guild delete handlers
+	//session.AddHandler(events.NewGuildDeleteEvent(ctn).Handler)
+	// Guild member add handlers
+	//session.AddHandler(events.NewGuildMemberAddEvent(ctn).HandlerAutoRole)
 
 	return
 }
