@@ -4,23 +4,23 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/services/database"
-	"github.com/z4vr/subayai/internal/services/leveling"
 	"github.com/z4vr/subayai/internal/util/static"
+	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/discordutils"
+	leveling2 "github.com/z4vr/subayai/pkg/leveling"
 	"math/rand"
 	"time"
 )
 
 type VoiceStateUpdateEvent struct {
 	db database.Database
-	lp leveling.LevelProvider
+	lp leveling2.LevelProvider
 }
 
 func NewVoiceStateUpdateEvent(ctn di.Container) *VoiceStateUpdateEvent {
 	return &VoiceStateUpdateEvent{
 		db: ctn.Get(static.DiDatabase).(database.Database),
-		lp: ctn.Get(static.DiLevelProvider).(leveling.LevelProvider),
+		lp: ctn.Get(static.DiLevelProvider).(leveling2.LevelProvider),
 	}
 }
 
@@ -47,7 +47,7 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 		lastSessionID        string = ""
 		lastSessionTimestamp int64  = 0
 		nowTimestamp         int64  = time.Now().Unix()
-		xpData               leveling.Data
+		xpData               leveling2.Data
 	)
 
 	afkChannelID, err = v.db.GetGuildAFKChannelID(e.GuildID)
@@ -101,7 +101,7 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 		// reward the leveling for the time spent in voice
 		levelData := v.lp.Get(e.UserID, e.GuildID)
 		if levelData == nil {
-			levelData := &leveling.Data{
+			levelData := &leveling2.Data{
 				UserID:    e.UserID,
 				GuildID:   e.GuildID,
 				Level:     0,

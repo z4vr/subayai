@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/z4vr/subayai/internal/services/config"
+	"github.com/z4vr/subayai/pkg/database"
 	"strings"
 
 	_ "github.com/lib/pq"
-	"github.com/z4vr/subayai/internal/services/database"
 )
 
 type PGMiddleware struct {

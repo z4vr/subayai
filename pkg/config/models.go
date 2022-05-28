@@ -1,60 +1,33 @@
 package config
 
+import (
+	"github.com/z4vr/subayai/pkg/database"
+	"github.com/z4vr/subayai/pkg/database/postgres"
+	"github.com/z4vr/subayai/pkg/discord"
+	"github.com/z4vr/subayai/pkg/waterlink"
+)
+
 var DefaultConfig = Config{
-	Bot: BotConfig{
+	Discord: discord.Config{
 		Token:      "",
 		OwnerID:    "",
 		GuildLimit: -1,
 	},
-	Logrus: LogrusConfig{
-		Level: "info",
-		Color: true,
-	},
-	Database: DatabaseConfig{
+	Database: database.Config{
 		Type: "postgres",
-		Postgres: PostgresConfig{
+		Postgres: postgres.Config{
 			Host: "localhost",
 			Port: 5432,
 		},
 	},
-	Lavalink: LavalinkConfig{
+	Lavalink: waterlink.Config{
 		Host:     "",
 		Password: "",
 	},
 }
 
-type BotConfig struct {
-	Token      string `json:"token"`
-	OwnerID    string `json:"ownerid"`
-	GuildLimit int    `json:"guildlimit"`
-}
-
-type LogrusConfig struct {
-	Level string `json:"leveling"`
-	Color bool   `json:"color"`
-}
-
-type DatabaseConfig struct {
-	Type     string         `json:"type"`
-	Postgres PostgresConfig `json:"postgres"`
-}
-
-type PostgresConfig struct {
-	Host     string `json:"postgres.host"`
-	Port     int    `json:"postgres.port"`
-	Database string `json:"postgres.database"`
-	Username string `json:"postgres.username"`
-	Password string `json:"postgres.password"`
-}
-
-type LavalinkConfig struct {
-	Host     string `json:"host"`
-	Password string `json:"password"`
-}
-
 type Config struct {
-	Bot      BotConfig      `json:"bot"`
-	Logrus   LogrusConfig   `json:"logrus"`
-	Database DatabaseConfig `json:"database"`
-	Lavalink LavalinkConfig `json:"lavalink"`
+	Discord  discord.Config
+	Database database.Config
+	Lavalink waterlink.Config
 }

@@ -5,10 +5,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/services/database"
-	"github.com/z4vr/subayai/internal/services/leveling"
 	"github.com/z4vr/subayai/internal/util/static"
+	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/embedify"
+	leveling2 "github.com/z4vr/subayai/pkg/leveling"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -16,13 +16,13 @@ import (
 
 type MessageCreateEvent struct {
 	db database.Database
-	lp leveling.LevelProvider
+	lp leveling2.LevelProvider
 }
 
 func NewMessageCreateEvent(ctn di.Container) *MessageCreateEvent {
 	return &MessageCreateEvent{
 		db: ctn.Get(static.DiDatabase).(database.Database),
-		lp: ctn.Get(static.DiLevelProvider).(leveling.LevelProvider),
+		lp: ctn.Get(static.DiLevelProvider).(leveling2.LevelProvider),
 	}
 }
 
@@ -33,7 +33,7 @@ func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Messag
 	var (
 		channelID      string
 		levelUpMessage string
-		xpData         leveling.Data
+		xpData         leveling2.Data
 		err            error
 	)
 
@@ -51,7 +51,7 @@ func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Messag
 
 	levelData := m.lp.Get(e.Author.ID, e.GuildID)
 	if levelData == nil {
-		levelData := &leveling.Data{
+		levelData := &leveling2.Data{
 			UserID:    e.Author.ID,
 			GuildID:   e.GuildID,
 			Level:     0,

@@ -1,6 +1,10 @@
 package database
 
-import "errors"
+import (
+	"errors"
+	"github.com/sirupsen/logrus"
+	"github.com/z4vr/subayai/pkg/database/postgres"
+)
 
 var ErrValueNotFound = errors.New("value not found in database")
 
@@ -45,4 +49,22 @@ type Database interface {
 	SetLastVoiceSessionID(userID, guildID string, id string) (err error)
 
 	Close()
+}
+
+func New(cfg Config) Database {
+	var db Database
+	var err error
+
+	switch cfg.Type {
+	case "postgres":
+		db = new(postgres.PGMiddleware)
+		err = db.Connect(cfg.Postgres)
+	default:
+		logrus.Fatalf("Unknown database type: %s", cfg.Type)
+	}
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed connecting to database")
+	}
+
+	return db
 }

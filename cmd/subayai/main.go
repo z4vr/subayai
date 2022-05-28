@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
+	"github.com/z4vr/subayai/pkg/config"
+	"github.com/z4vr/subayai/pkg/database"
 	"os"
 	"os/signal"
 	"runtime/pprof"
 	"syscall"
 
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/services/config"
 )
 
 var (
@@ -19,21 +20,18 @@ var (
 func main() {
 	flag.Parse()
 
-	cfg := config.NewPaerser(*flagConfigPath)
-	if err := cfg.Parse(); err != nil {
-		logrus.WithError(err).Fatal("Failed to parse config")
-	}
-	loglevel, err := logrus.ParseLevel(cfg.Config().Logrus.Level)
-	if err != nil {
-		logrus.WithError(err).Warn("Failed to parse logrus leveling, using default")
-		loglevel = logrus.InfoLevel
-	}
-	logrus.SetLevel(loglevel)
+	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     cfg.Config().Logrus.Color,
+		ForceColors:     true,
 		TimestampFormat: "02-01-2006 15:04:05",
 		FullTimestamp:   true,
 	})
+
+	// Config
+	cfg, err := config.Parse(*flagConfigPath, "SUBAYAI_", config.DefaultConfig)
+	if err != nil {
+		logrus.WithError(err).Fatal("Config parsing failed")
+	}
 
 	if *flagCPUProfile != "" {
 		f, err := os.Create(*flagCPUProfile)
@@ -46,6 +44,17 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
+
+	// Database
+	db := database.New(cfg.Database)
+	if err != nil {
+		logrus.WithError(err).Fatal("Database initialization failed")
+	}
+	defer func() {
+		logrus.Info("Shutting down database connection ...")
+		db.Close()
+	}()
+	logrus.WithField("typ", cfg.Database.Type).Info("Database initialized")
 
 	block()
 }

@@ -15,8 +15,3 @@ type Waterlink struct {
 	opts            waterlink.ConnectionOptions
 	reconnectionTry int
 }
-
-type WaterlinkConfig struct {
-	Host     string
-	Password string
-}

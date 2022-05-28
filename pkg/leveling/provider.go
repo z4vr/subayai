@@ -3,7 +3,7 @@ package leveling
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/services/database"
+	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/errorarray"
 )
 
