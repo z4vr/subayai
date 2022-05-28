@@ -5,7 +5,7 @@ import (
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/internal/services/database"
-	xp2 "github.com/z4vr/subayai/internal/services/level"
+	"github.com/z4vr/subayai/internal/services/leveling"
 	"github.com/z4vr/subayai/internal/util/static"
 	"github.com/z4vr/subayai/pkg/discordutils"
 	"math/rand"
@@ -14,11 +14,13 @@ import (
 
 type VoiceStateUpdateEvent struct {
 	db database.Database
+	lp leveling.LevelProvider
 }
 
 func NewVoiceStateUpdateEvent(ctn di.Container) *VoiceStateUpdateEvent {
 	return &VoiceStateUpdateEvent{
 		db: ctn.Get(static.DiDatabase).(database.Database),
+		lp: ctn.Get(static.DiLevelProvider).(leveling.LevelProvider),
 	}
 }
 
@@ -45,7 +47,7 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 		lastSessionID        string = ""
 		lastSessionTimestamp int64  = 0
 		nowTimestamp         int64  = time.Now().Unix()
-		xpData               *xp2.Data
+		xpData               leveling.Data
 	)
 
 	afkChannelID, err = v.db.GetGuildAFKChannelID(e.GuildID)
@@ -96,26 +98,39 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 	// scenario: user left voice channel
 	if e.VoiceState.ChannelID == "" && e.VoiceState.SessionID == lastSessionID ||
 		e.VoiceState.ChannelID == afkChannelID && e.VoiceState.SessionID == lastSessionID {
-		// reward the level for the time spent in voice
-		xpData, err = xp2.GetUserXP(e.UserID, e.GuildID, v.db)
-		if err != nil && err == database.ErrValueNotFound {
-			logrus.WithFields(logrus.Fields{
-				"gid": e.GuildID,
-				"uid": e.UserID,
-			}).WithError(err).Error("Failed to get user level")
-			xpData = &xp2.Data{
+		// reward the leveling for the time spent in voice
+		levelData := v.lp.Get(e.UserID, e.GuildID)
+		if levelData == nil {
+			levelData := &leveling.Data{
 				UserID:    e.UserID,
 				GuildID:   e.GuildID,
+				Level:     0,
 				CurrentXP: 0,
 				TotalXP:   0,
-				Level:     0,
+			}
+			err := v.lp.Add(levelData)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"uid": e.UserID,
+					"gid": e.GuildID,
+				}).WithError(err).Error("Failed to add user to level map")
 			}
 		}
 
-		xpEarned := (rand.Intn(50) + 25) * (int(nowTimestamp - lastSessionTimestamp)) / 600
-		_ = xpData.AddXP(xpEarned, false)
+		earnedXP := rand.Intn(60) + 25
+		levelup := xpData.AddXP(earnedXP, false)
 
-		err = xp2.UpdateUserXP(xpData, v.db)
+		err = v.lp.SaveLevelData(xpData)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"gid": e.GuildID,
+				"uid": e.UserID,
+			}).WithError(err).Error("Failed to update user leveling")
+		}
+
+		if levelup {
+			// TODO: send a message to the user or to the bot channel
+		}
 
 	}
 

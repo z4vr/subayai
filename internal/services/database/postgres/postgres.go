@@ -32,7 +32,7 @@ func (p *PGMiddleware) setup() (err error) {
 	CREATE TABLE IF NOT EXISTS "guild" (
 		"guild_id" varchar (25) NOT NULL,
 		"bot_message_channel_id" varchar (25) NOT NULL DEFAULT '',
-		"level_up_message" text DEFAULT 'Well done {user}, your Level of wasting time just advanced to {level}!',
+		"level_up_message" text DEFAULT 'Well done {user}, your Level of wasting time just advanced to {leveling}!',
 		"afk_channel_id" varchar (25) NOT NULL DEFAULT '',
 		"autorole_ids" varchar (25) NOT NULL DEFAULT '',
 		PRIMARY KEY ("guild_id"));
@@ -51,13 +51,13 @@ func (p *PGMiddleware) setup() (err error) {
 		return
 	}
 
-	// create level table
+	// create leveling table
 	_, err = tx.Exec(`
-	CREATE TABLE IF NOT EXISTS "level" (
+	CREATE TABLE IF NOT EXISTS "leveling" (
 		"entry_id" serial NOT NULL,
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
-		"level" integer NOT NULL DEFAULT 0,
+		"leveling" integer NOT NULL DEFAULT 0,
 		"current_xp" integer NOT NULL DEFAULT 0,
 		"total_xp" integer NOT NULL DEFAULT 0,
 		PRIMARY KEY ("entry_id"));
@@ -167,12 +167,12 @@ func (p *PGMiddleware) SetGuildBotMessageChannelID(guildID, value string) (err e
 	return p.setGuildSetting(guildID, "bot_message_channel_id", value)
 }
 
-// GetGuildLevelUpMessage returns the level up message for the guild
+// GetGuildLevelUpMessage returns the leveling up message for the guild
 func (p *PGMiddleware) GetGuildLevelUpMessage(guildID string) (message string, err error) {
 	return p.getGuildSetting(guildID, "level_up_message")
 }
 
-// SetGuildLevelUpMessage sets the level up message for the guild
+// SetGuildLevelUpMessage sets the leveling up message for the guild
 func (p *PGMiddleware) SetGuildLevelUpMessage(guildID, message string) (err error) {
 	return p.setGuildSetting(guildID, "level_up_message", message)
 }
@@ -245,7 +245,7 @@ func (p *PGMiddleware) setUserSetting(userID, setting, value string) (err error)
 func (p *PGMiddleware) getLevelSetting(userID, guildID, setting string) (value int, err error) {
 
 	err = p.Db.QueryRow(`
-	SELECT `+setting+` FROM level WHERE user_id = $1 AND guild_id = $2;
+	SELECT `+setting+` FROM leveling WHERE user_id = $1 AND guild_id = $2;
 	`, userID, guildID).Scan(&value)
 
 	err = wrapNotFound(err)
@@ -256,7 +256,7 @@ func (p *PGMiddleware) getLevelSetting(userID, guildID, setting string) (value i
 func (p *PGMiddleware) setLevelSetting(userID, guildID, setting string, value int) (err error) {
 
 	res, err := p.Db.Exec(`
-	UPDATE level SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
+	UPDATE leveling SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
 	`, value, userID, guildID)
 	if err != nil {
 		return
@@ -269,7 +269,7 @@ func (p *PGMiddleware) setLevelSetting(userID, guildID, setting string, value in
 
 	if rows == 0 {
 		_, err = p.Db.Exec(`
-		INSERT INTO level (user_id, guild_id, `+setting+`) VALUES ($1, $2, $3);
+		INSERT INTO leveling (user_id, guild_id, `+setting+`) VALUES ($1, $2, $3);
 		`, userID, guildID, value)
 		if err != nil {
 			return
@@ -278,32 +278,32 @@ func (p *PGMiddleware) setLevelSetting(userID, guildID, setting string, value in
 	return
 }
 
-// GetUserLevel returns the level for the user
+// GetUserLevel returns the leveling for the user
 func (p *PGMiddleware) GetUserLevel(userID, guildID string) (level int, err error) {
-	return p.getLevelSetting(userID, guildID, "level")
+	return p.getLevelSetting(userID, guildID, "leveling")
 }
 
-// SetUserLevel sets the level for the user
+// SetUserLevel sets the leveling for the user
 func (p *PGMiddleware) SetUserLevel(userID, guildID string, level int) (err error) {
-	return p.setLevelSetting(userID, guildID, "level", level)
+	return p.setLevelSetting(userID, guildID, "leveling", level)
 }
 
-// GetUserCurrentXP returns the current level for the user
+// GetUserCurrentXP returns the current leveling for the user
 func (p *PGMiddleware) GetUserCurrentXP(userID, guildID string) (xp int, err error) {
 	return p.getLevelSetting(userID, guildID, "current_xp")
 }
 
-// SetUserCurrentXP sets the current level for the user
+// SetUserCurrentXP sets the current leveling for the user
 func (p *PGMiddleware) SetUserCurrentXP(userID, guildID string, xp int) (err error) {
 	return p.setLevelSetting(userID, guildID, "current_xp", xp)
 }
 
-// GetUserTotalXP returns the total level for the user
+// GetUserTotalXP returns the total leveling for the user
 func (p *PGMiddleware) GetUserTotalXP(userID, guildID string) (xp int, err error) {
 	return p.getLevelSetting(userID, guildID, "total_xp")
 }
 
-// SetUserTotalXP sets the total level for the user
+// SetUserTotalXP sets the total leveling for the user
 func (p *PGMiddleware) SetUserTotalXP(userID, guildID string, xp int) (err error) {
 	return p.setLevelSetting(userID, guildID, "total_xp", xp)
 }

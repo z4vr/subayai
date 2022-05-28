@@ -19,3 +19,6 @@ config.yaml
 
 # binaries
 bin/
+
+# Idea
+.idea/

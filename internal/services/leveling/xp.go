@@ -1,10 +1,10 @@
-package level
+package leveling
 
 import (
 	"math"
 )
 
-// NeededXP returns the amount of XP needed to reach the next level
+// NeededXP returns the amount of XP needed to reach the next leveling
 func (x *Data) NeededXP() int {
 	return 5*int(math.Pow(float64(x.Level), 2)) + (50 * x.Level) + 100 - x.CurrentXP
 }

@@ -1,4 +1,4 @@
-package level
+package leveling
 
 type Data struct {
 	UserID    string
@@ -10,4 +10,4 @@ type Data struct {
 
 type GuildData map[string]UserData
 
-type UserData map[string]Data
+type UserData map[string]*Data

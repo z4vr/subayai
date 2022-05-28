@@ -30,7 +30,7 @@ type BotConfig struct {
 }
 
 type LogrusConfig struct {
-	Level string `json:"level"`
+	Level string `json:"leveling"`
 	Color bool   `json:"color"`
 }
 

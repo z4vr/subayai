@@ -8,6 +8,7 @@ import (
 	"runtime/pprof"
 	"syscall"
 
+	"github.com/z4vr/subayai/internal/events"
 	"github.com/z4vr/subayai/internal/util/static"
 
 	"github.com/bwmarrin/discordgo"
@@ -16,6 +17,7 @@ import (
 	"github.com/z4vr/subayai/internal/inits"
 	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/services/database"
+	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
 var (
@@ -84,18 +86,33 @@ func main() {
 		return
 	}
 
+	// register leveling provider
+	err = diBuilder.Add(di.Def{
+		Name: static.DiLevelProvider,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return inits.NewLevelProvider(ctn), nil
+		},
+		Close: func(obj interface{}) error {
+			return obj.(*leveling.LevelProvider).Close()
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Panic("Error initializing Level Provider")
+		return
+	}
+
 	// Building object map
 	ctn := diBuilder.Build()
 	cfg := ctn.Get(static.DiConfigProvider).(config.Provider)
 	if err := cfg.Parse(); err != nil {
 		logrus.WithError(err).Fatal("Failed to parse config")
 	}
-	level, err := logrus.ParseLevel(cfg.Config().Logrus.Level)
+	loglevel, err := logrus.ParseLevel(cfg.Config().Logrus.Level)
 	if err != nil {
-		logrus.WithError(err).Warn("Failed to parse logrus level, using default")
-		level = logrus.InfoLevel
+		logrus.WithError(err).Warn("Failed to parse logrus leveling, using default")
+		loglevel = logrus.InfoLevel
 	}
-	logrus.SetLevel(level)
+	logrus.SetLevel(loglevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors:     cfg.Config().Logrus.Color,
 		TimestampFormat: "02-01-2006 15:04:05",
@@ -103,6 +120,19 @@ func main() {
 	})
 
 	session := ctn.Get(static.DiDiscordSession).(*discordgo.Session)
+
+	// Register handlers
+	// Ready handlers
+	session.AddHandler(events.NewReadyEvent().Handler)
+	// Message handlers
+	session.AddHandler(events.NewMessageCreateEvent(ctn).HandlerXP)
+	// Guild create handlers
+	//session.AddHandler(events.NewGuildCreateEvent(ctn).HandlerCreate)
+	// Guild delete handlers
+	session.AddHandler(events.NewGuildDeleteEvent(ctn).Handler)
+	// Guild member add handlers
+	session.AddHandler(events.NewGuildMemberAddEvent(ctn).HandlerAutoRole)
+
 	if err := session.Open(); err != nil {
 		logrus.WithError(err).Fatal("Failed connecting to discord")
 	}

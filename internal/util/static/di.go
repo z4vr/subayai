@@ -4,5 +4,5 @@ const (
 	DiDiscordSession = "di-discord-session"
 	DiConfigProvider = "di-config-provider"
 	DiDatabase       = "di-database"
-	DiEmbedProvider  = "di-embed-provider"
+	DiLevelProvider  = "di-leveling-provider"
 )
