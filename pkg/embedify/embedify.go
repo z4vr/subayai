@@ -2,7 +2,7 @@ package embedify
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/z4vr/subayai/internal/util/static"
+	"github.com/z4vr/subayai/internal/static"
 	"time"
 )
 

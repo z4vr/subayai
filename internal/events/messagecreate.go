@@ -5,7 +5,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/util/static"
+	static2 "github.com/z4vr/subayai/internal/static"
 	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/embedify"
 	leveling2 "github.com/z4vr/subayai/pkg/leveling"
@@ -21,8 +21,8 @@ type MessageCreateEvent struct {
 
 func NewMessageCreateEvent(ctn di.Container) *MessageCreateEvent {
 	return &MessageCreateEvent{
-		db: ctn.Get(static.DiDatabase).(database.Database),
-		lp: ctn.Get(static.DiLevelProvider).(leveling2.LevelProvider),
+		db: ctn.Get(static2.DiDatabase).(database.Database),
+		lp: ctn.Get(static2.DiLevelProvider).(leveling2.LevelProvider),
 	}
 }
 
@@ -115,7 +115,7 @@ func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Messag
 		levelUpMessage = strings.Replace(levelUpMessage, "{leveling}", strconv.Itoa(xpData.Level), -1)
 
 		emb := embedify.New().
-			SetAuthor(e.Author.Username, static.AppIcon).
+			SetAuthor(e.Author.Username, static2.AppIcon).
 			SetDescription(levelUpMessage).Build()
 
 		_, err = s.ChannelMessageSendEmbed(channelID, emb)

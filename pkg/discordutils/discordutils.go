@@ -3,7 +3,7 @@ package discordutils
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/z4vr/subayai/internal/util/static"
+	"github.com/z4vr/subayai/internal/static"
 	"strconv"
 	"time"
 )

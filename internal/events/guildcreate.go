@@ -6,7 +6,7 @@ import (
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/internal/services/config"
-	"github.com/z4vr/subayai/internal/util/static"
+	"github.com/z4vr/subayai/internal/static"
 	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/discordutils"
 )

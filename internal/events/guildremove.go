@@ -3,7 +3,7 @@ package events
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di"
-	"github.com/z4vr/subayai/internal/util/static"
+	"github.com/z4vr/subayai/internal/static"
 	"github.com/z4vr/subayai/pkg/database"
 )
 
