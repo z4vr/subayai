@@ -1,6 +1,6 @@
 package leveling
 
-type Data struct {
+type LevelData struct {
 	UserID    string
 	GuildID   string
 	CurrentXP int
@@ -8,6 +8,6 @@ type Data struct {
 	Level     int
 }
 
-type GuildData map[string]UserData
+type GuildMap map[string]MemberMap
 
-type UserData map[string]*Data
+type MemberMap map[string]*LevelData

@@ -1,12 +1,9 @@
 package database
 
 import (
-	"errors"
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/pkg/database/postgres"
 )
-
-var ErrValueNotFound = errors.New("value not found in database")
 
 // Database is the interface for a database driver.
 type Database interface {

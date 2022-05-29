@@ -1,6 +1,9 @@
 package discord
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+	"github.com/z4vr/subayai/pkg/discord/events"
+)
 
 type Discord struct {
 	session *discordgo.Session
@@ -17,6 +20,13 @@ func New(c Config) (*Discord, error) {
 	}
 
 	return &t, nil
+}
+
+func (t *Discord) Open() error {
+
+	t.session.AddHandler(events.NewReadyEvent().Handler)
+
+	return t.session.Open()
 }
 
 func (t *Discord) Close() {

@@ -2,8 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/z4vr/subayai/pkg/config"
 	"github.com/z4vr/subayai/pkg/database"
+	"github.com/z4vr/subayai/pkg/discord"
+	"github.com/z4vr/subayai/pkg/leveling"
 	"os"
 	"os/signal"
 	"runtime/pprof"
@@ -55,6 +58,38 @@ func main() {
 		db.Close()
 	}()
 	logrus.WithField("typ", cfg.Database.Type).Info("Database initialized")
+
+	// Discord & Leveling
+	dc, err := discord.New(cfg.Discord)
+	if err != nil {
+		logrus.WithError(err).Fatal("Discord initialization failed")
+	}
+	lp := leveling.New(dc.Session(), db)
+	if lp == nil {
+		logrus.Fatal("Leveling initialization failed")
+	}
+	err = dc.Open(db, lp)
+	if err != nil {
+		logrus.WithError(err).Fatal("Discord connection failed")
+	}
+	logrus.Info("Discord connection initialized")
+	defer func() {
+		logrus.Info("Shutting down Discord connection ...")
+		dc.Close()
+	}()
+	err = lp.Open()
+	if err != nil {
+		logrus.WithError(err).Fatal("Leveling connection failed")
+	}
+	logrus.Info("Leveling map initialized")
+	defer func() {
+		logrus.Info("Shutting down leveling map ...")
+		err := lp.Close()
+		if err != nil {
+			logrus.WithError(err).Fatal("Leveling map shutdown failed -> check database entrys for corruption")
+		}
+	}()
+	fmt.Println(lp.ToString())
 
 	block()
 }

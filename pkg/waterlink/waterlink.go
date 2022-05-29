@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func New(s *discordgo.Session, c WaterlinkConfig) (*Waterlink, error) {
+func New(s *discordgo.Session, c Config) (*Waterlink, error) {
 	var w Waterlink
 	var err error
 

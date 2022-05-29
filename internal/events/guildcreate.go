@@ -3,23 +3,21 @@ package events
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/services/config"
-	"github.com/z4vr/subayai/internal/static"
 	"github.com/z4vr/subayai/pkg/database"
+	"github.com/z4vr/subayai/pkg/discord"
 	"github.com/z4vr/subayai/pkg/discordutils"
 )
 
 type GuildCreateEvent struct {
 	db  database.Database
-	cfg config.Provider
+	cfg discord.Config
 }
 
-func NewGuildCreateEvent(ctn di.Container) *GuildCreateEvent {
+func NewGuildCreateEvent(db database.Database, cfg discord.Config) *GuildCreateEvent {
 	return &GuildCreateEvent{
-		db:  ctn.Get(static.DiDatabase).(database.Database),
-		cfg: ctn.Get(static.DiConfigProvider).(config.Provider),
+		db:  db,
+		cfg: cfg,
 	}
 }
 
@@ -27,7 +25,7 @@ func (g *GuildCreateEvent) HandlerCreate(s *discordgo.Session, e *discordgo.Guil
 
 	// TODO: log earlier guild joins to prevent triggering this e
 
-	limit := g.cfg.Config().Bot.GuildLimit
+	limit := g.cfg.GuildLimit
 	if limit == -1 {
 		return
 	}

@@ -5,13 +5,13 @@ import (
 )
 
 // NeededXP returns the amount of XP needed to reach the next leveling
-func (x *Data) NeededXP() int {
+func (x *LevelData) NeededXP() int {
 	return 5*int(math.Pow(float64(x.Level), 2)) + (50 * x.Level) + 100 - x.CurrentXP
 }
 
 // AddXP adds XP to the user recursively until there is
 // no more XP to add
-func (x *Data) AddXP(earnedXP int, levelup bool) bool {
+func (x *LevelData) AddXP(earnedXP int, levelup bool) bool {
 	neededXP := x.NeededXP()
 	if x.CurrentXP >= neededXP {
 		x.Level++

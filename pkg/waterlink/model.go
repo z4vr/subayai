@@ -1,12 +1,12 @@
 package waterlink
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"github.com/lukasl-dev/waterlink/v2"
+	"github.com/z4vr/subayai/pkg/discord"
 )
 
 type Waterlink struct {
-	s      *discordgo.Session
+	dc     *discord.Discord
 	client *waterlink.Client
 	conn   *waterlink.Connection
 

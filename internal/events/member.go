@@ -2,9 +2,7 @@ package events
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/internal/static"
 	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/stringutils"
 )
@@ -13,9 +11,9 @@ type GuildMemberAddEvent struct {
 	db database.Database
 }
 
-func NewGuildMemberAddEvent(ctn di.Container) *GuildMemberAddEvent {
+func NewGuildMemberAddEvent(db database.Database) *GuildMemberAddEvent {
 	return &GuildMemberAddEvent{
-		db: ctn.Get(static.DiDatabase).(database.Database),
+		db: db,
 	}
 }
 

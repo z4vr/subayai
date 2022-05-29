@@ -3,8 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"github.com/z4vr/subayai/internal/services/config"
-	"github.com/z4vr/subayai/pkg/database"
+	"github.com/z4vr/subayai/pkg/database/dberr"
 	"strings"
 
 	_ "github.com/lib/pq"
@@ -13,8 +12,6 @@ import (
 type PGMiddleware struct {
 	Db *sql.DB
 }
-
-var _ database.Database = (*PGMiddleware)(nil)
 
 func (p *PGMiddleware) setup() (err error) {
 	// ping the database to make sure it's up
@@ -99,7 +96,7 @@ func (p *PGMiddleware) setup() (err error) {
 
 func (p *PGMiddleware) Connect(credentials ...interface{}) (err error) {
 	// connect to the database
-	creds := credentials[0].(config.PostgresConfig)
+	creds := credentials[0].(Config)
 	pgi := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		creds.Host, creds.Port, creds.Username, creds.Password, creds.Database)
 	db, err := sql.Open("postgres", pgi)
@@ -152,7 +149,7 @@ func (p *PGMiddleware) setGuildSetting(guildID, setting, value string) (err erro
 
 func wrapNotFound(err error) error {
 	if err == sql.ErrNoRows {
-		err = database.ErrValueNotFound
+		err = dberr.ErrNotFound
 	}
 	return err
 }

@@ -1,14 +1,13 @@
 package events
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
-	static2 "github.com/z4vr/subayai/internal/static"
+	"github.com/z4vr/subayai/internal/static"
 	"github.com/z4vr/subayai/pkg/database"
+	"github.com/z4vr/subayai/pkg/database/dberr"
 	"github.com/z4vr/subayai/pkg/embedify"
-	leveling2 "github.com/z4vr/subayai/pkg/leveling"
+	"github.com/z4vr/subayai/pkg/leveling"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -16,24 +15,22 @@ import (
 
 type MessageCreateEvent struct {
 	db database.Database
-	lp leveling2.LevelProvider
+	lp *leveling.Provider
 }
 
-func NewMessageCreateEvent(ctn di.Container) *MessageCreateEvent {
+func NewMessageCreateEvent(db database.Database, lp *leveling.Provider) *MessageCreateEvent {
 	return &MessageCreateEvent{
-		db: ctn.Get(static2.DiDatabase).(database.Database),
-		lp: ctn.Get(static2.DiLevelProvider).(leveling2.LevelProvider),
+		db: db,
+		lp: lp,
 	}
 }
 
 func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.MessageCreate) {
 
-	fmt.Println(1)
-
 	var (
 		channelID      string
 		levelUpMessage string
-		xpData         leveling2.Data
+		xpData         leveling.Data
 		err            error
 	)
 
@@ -51,7 +48,7 @@ func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Messag
 
 	levelData := m.lp.Get(e.Author.ID, e.GuildID)
 	if levelData == nil {
-		levelData := &leveling2.Data{
+		levelData := &leveling.Data{
 			UserID:    e.Author.ID,
 			GuildID:   e.GuildID,
 			Level:     0,
@@ -80,7 +77,7 @@ func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Messag
 
 	if levelup {
 		channelID, err = m.db.GetGuildBotMessageChannelID(e.GuildID)
-		if err != nil && err == database.ErrValueNotFound {
+		if err != nil && err == dberr.ErrNotFound {
 			logrus.WithFields(logrus.Fields{
 				"gid": e.GuildID,
 				"uid": e.Author.ID,
@@ -115,7 +112,7 @@ func (m *MessageCreateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Messag
 		levelUpMessage = strings.Replace(levelUpMessage, "{leveling}", strconv.Itoa(xpData.Level), -1)
 
 		emb := embedify.New().
-			SetAuthor(e.Author.Username, static2.AppIcon).
+			SetAuthor(e.Author.Username, static.AppIcon).
 			SetDescription(levelUpMessage).Build()
 
 		_, err = s.ChannelMessageSendEmbed(channelID, emb)
