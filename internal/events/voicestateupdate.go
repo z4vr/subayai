@@ -32,8 +32,8 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 	if err != nil {
 		logrus.
 			WithFields(logrus.Fields{
-				"gid": e.GuildID,
-				"uid": e.UserID,
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
 			}).
 			Error("Failed to get member")
 		return
@@ -54,21 +54,21 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 	afkChannelID, err = v.db.GetGuildAFKChannelID(e.GuildID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"gid": e.GuildID,
+			"guildID": e.GuildID,
 		}).WithError(err).Error("Failed to get afk channel id")
 	}
 	lastSessionID, err = v.db.GetLastVoiceSessionID(e.GuildID, e.UserID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"gid": e.GuildID,
-			"uid": e.UserID,
+			"guildID": e.GuildID,
+			"userID":  e.UserID,
 		}).WithError(err).Error("Failed to get last session id")
 	}
 	lastSessionTimestamp, err = v.db.GetLastVoiceSessionTimestamp(e.GuildID, e.UserID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"gid": e.GuildID,
-			"uid": e.UserID,
+			"guildID": e.GuildID,
+			"userID":  e.UserID,
 		}).WithError(err).Error("Failed to get last session timestamp")
 	}
 
@@ -82,15 +82,15 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 		err = v.db.SetLastVoiceSessionID(e.GuildID, e.UserID, lastSessionID)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"gid": e.GuildID,
-				"uid": e.UserID,
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
 			}).WithError(err).Error("Failed to set last session id")
 		}
 		err = v.db.SetLastVoiceSessionTimestamp(e.GuildID, e.UserID, lastSessionTimestamp)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"gid": e.GuildID,
-				"uid": e.UserID,
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
 			}).WithError(err).Error("Failed to set last session timestamp")
 		}
 
@@ -112,8 +112,8 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 			err := v.lp.Add(levelData)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"uid": e.UserID,
-					"gid": e.GuildID,
+					"userID":  e.UserID,
+					"guildID": e.GuildID,
 				}).WithError(err).Error("Failed to add user to level map")
 			}
 		}
@@ -124,8 +124,8 @@ func (v *VoiceStateUpdateEvent) HandlerXP(s *discordgo.Session, e *discordgo.Voi
 		err = v.lp.SaveLevelData(xpData)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"gid": e.GuildID,
-				"uid": e.UserID,
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
 			}).WithError(err).Error("Failed to update user leveling")
 		}
 

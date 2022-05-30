@@ -1,9 +1,12 @@
 package leveling
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/discord"
+	"github.com/z4vr/subayai/pkg/errorarray"
 )
 
 type Provider struct {
@@ -20,30 +23,100 @@ func New(dc *discord.Discord, db database.Database) *Provider {
 	}
 }
 
-func (p *Provider) Open() {
+// Open and Close
 
-	// populate guildMap
-	session := p.dc.Session()
-	guilds := session.State.Guilds
+func (p *Provider) Open() error {
 
-	for _, guild := range guilds {
-		p.guildMap[guild.ID] = make(MemberMap)
+	// populate guildMap from DB
+
+	errorArray := errorarray.New()
+
+	fmt.Println(p.guildMap)
+
+	// add messagecreate listener
+	p.dc.Session().AddHandler(NewLevelingHandlers(p).MessageCreate)
+
+	if errorArray.Len() > 0 {
+		return errorArray
 	}
 
-	// populate guildMap with members
-	for _, guild := range guilds {
-		for _, member := range guild.Members {
-			p.guildMap[guild.ID][member.User.ID] = p.FetchFromDB(member.User.ID, guild.ID)
+	return nil
+
+}
+
+func (p *Provider) Close() error {
+
+	errorArray := errorarray.New()
+	// save guildMap to DB
+	for _, memberMap := range p.guildMap {
+		for _, levelData := range memberMap {
+			err := p.SaveToDB(levelData)
+			if err != nil {
+				errorArray.Append(err)
+				continue
+			}
 		}
 	}
 
+	if errorArray.Len() > 0 {
+		logrus.Error("Failed to save level data to DB: ", errorArray.Errors())
+		return errorArray
+	}
+
+	return nil
+
 }
 
-func (p *Provider) Close() {
+// Getter and Setters
+
+func (p *Provider) Get(userID, guildID string) (*LevelData, error) {
+
+	if p.guildMap[guildID][userID] == nil {
+		return p.FetchFromDB(userID, guildID)
+	}
+
+	return p.guildMap[guildID][userID], nil
 
 }
 
-func (p *Provider) FetchFromDB(guildID, userID string) *LevelData {
+func (p *Provider) Set(userID, guildID string, levelData *LevelData) {
+	p.guildMap[guildID][userID] = levelData
+}
+
+// DB functions
+
+func (p *Provider) SaveToDB(levelData *LevelData) error {
+
+	err := p.db.SetUserCurrentXP(levelData.UserID, levelData.GuildID, levelData.CurrentXP)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": levelData.GuildID,
+			"userID":  levelData.UserID,
+		}).Error("Failed to save current XP to DB: ", err)
+		return err
+	}
+	err = p.db.SetUserTotalXP(levelData.UserID, levelData.GuildID, levelData.TotalXP)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": levelData.GuildID,
+			"userID":  levelData.UserID,
+		}).Error("Failed to save total XP to DB: ", err)
+		return err
+	}
+	err = p.db.SetUserLevel(levelData.UserID, levelData.GuildID, levelData.Level)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": levelData.GuildID,
+			"userID":  levelData.UserID,
+		}).Error("Failed to save level to DB: ", err)
+		return err
+	}
+
+	return err
+
+}
+
+func (p *Provider) FetchFromDB(userID, guildID string) (*LevelData, error) {
 	levelData := &LevelData{
 		UserID:  userID,
 		GuildID: guildID,
@@ -57,7 +130,7 @@ func (p *Provider) FetchFromDB(guildID, userID string) *LevelData {
 			"guildID": guildID,
 			"userID":  userID,
 		}).Error("Failed to fetch current XP from DB: ", err)
-		return nil
+		return nil, err
 	}
 	levelData.TotalXP, err = p.db.GetUserTotalXP(userID, guildID)
 	if err != nil {
@@ -65,7 +138,7 @@ func (p *Provider) FetchFromDB(guildID, userID string) *LevelData {
 			"guildID": guildID,
 			"userID":  userID,
 		}).Error("Failed to fetch total XP from DB: ", err)
-		return nil
+		return nil, err
 	}
 	levelData.Level, err = p.db.GetUserLevel(userID, guildID)
 	if err != nil {
@@ -73,9 +146,9 @@ func (p *Provider) FetchFromDB(guildID, userID string) *LevelData {
 			"guildID": guildID,
 			"userID":  userID,
 		}).Error("Failed to fetch level from DB: ", err)
-		return nil
+		return nil, err
 	}
 
-	return levelData
+	return levelData, nil
 
 }

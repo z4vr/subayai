@@ -3,25 +3,27 @@ package waterlink
 import (
 	"errors"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/gompus/snowflake"
 	"github.com/lukasl-dev/waterlink/v2"
 	"github.com/lukasl-dev/waterlink/v2/track"
 	"github.com/lukasl-dev/waterlink/v2/track/query"
 	"github.com/sirupsen/logrus"
-	"math/rand"
-	"time"
+	"github.com/z4vr/subayai/pkg/discord"
 )
 
-func New(s *discordgo.Session, c Config) (*Waterlink, error) {
+func New(dc *discord.Discord, c Config) (*Waterlink, error) {
 	var w Waterlink
 	var err error
 
-	w.s = s
+	w.dc = dc
 	w.address = c.Host
 	w.creds = waterlink.Credentials{
 		Authorization: c.Password,
-		UserID:        snowflake.MustParse(w.s.State.User.ID),
+		UserID:        snowflake.MustParse(w.dc.Session().State.User.ID),
 		ResumeKey:     "subayaiSession",
 	}
 
@@ -34,7 +36,7 @@ func New(s *discordgo.Session, c Config) (*Waterlink, error) {
 		return nil, err
 	}
 
-	w.s.AddHandler(w.handleVoiceServerUpdate)
+	w.dc.Session().AddHandler(w.handleVoiceServerUpdate)
 
 	return &w, nil
 }

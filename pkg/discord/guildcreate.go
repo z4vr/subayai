@@ -1,20 +1,20 @@
-package events
+package discord
 
 import (
 	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/pkg/database"
-	"github.com/z4vr/subayai/pkg/discord"
 	"github.com/z4vr/subayai/pkg/discordutils"
 )
 
 type GuildCreateEvent struct {
 	db  database.Database
-	cfg discord.Config
+	cfg Config
 }
 
-func NewGuildCreateEvent(db database.Database, cfg discord.Config) *GuildCreateEvent {
+func NewGuildCreateEvent(db database.Database, cfg Config) *GuildCreateEvent {
 	return &GuildCreateEvent{
 		db:  db,
 		cfg: cfg,
