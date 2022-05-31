@@ -8,10 +8,12 @@ import (
 // Database is the interface for a database driver.
 type Database interface {
 
-	// GeneralL
+	// General
+
 	Connect(credentials ...interface{}) error
 
-	// guilds
+	// GUILDS
+
 	GetGuildBotMessageChannelID(guildID string) (channelID string, err error)
 	SetGuildBotMessageChannelID(guildID, channelID string) error
 
@@ -24,6 +26,8 @@ type Database interface {
 	GetGuildAutoroleIDs(guildID string) (roleIDs []string, err error)
 	SetGuildAutoroleIDs(guildID string, roleIDs []string) (err error)
 
+	// LEVELING
+
 	GetUserLevel(userID, guildID string) (level int, err error)
 	SetUserLevel(userID, guildID string, level int) (err error)
 
@@ -33,11 +37,15 @@ type Database interface {
 	GetUserTotalXP(userID, guildID string) (xp int, err error)
 	SetUserTotalXP(userID, guildID string, xp int) (err error)
 
+	// TIMESTAMPS
+
 	GetLastMessageTimestamp(userID, guildID string) (timestamp int64, err error)
 	SetLastMessageTimestamp(userID, guildID string, timestamp int64) (err error)
 
 	GetLastVoiceSessionTimestamp(userID, guildID string) (timestamp int64, err error)
 	SetLastVoiceSessionTimestamp(userID, guildID string, timestamp int64) (err error)
+
+	// IDS
 
 	GetLastMessageID(userID, guildID string) (id string, err error)
 	SetLastMessageID(userID, guildID string, id string) (err error)

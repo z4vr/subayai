@@ -1,8 +1,6 @@
 package leveling
 
 import (
-	"fmt"
-
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/discord"
@@ -25,22 +23,21 @@ func New(dc *discord.Discord, db database.Database) *Provider {
 
 // Open and Close
 
-func (p *Provider) Open() error {
+func (p *Provider) Open() {
 
-	// populate guildMap from DB
+	// create an empty guildMap
+	p.guildMap = make(GuildMap)
 
-	errorArray := errorarray.New()
-
-	fmt.Println(p.guildMap)
-
-	// add messagecreate listener
-	p.dc.Session().AddHandler(NewLevelingHandlers(p).MessageCreate)
-
-	if errorArray.Len() > 0 {
-		return errorArray
+	// create a map for each guild#
+	// we don't want to create a map for every user
+	// since this might take too long to load
+	// and we don't want to load all users at once
+	for _, guild := range p.dc.Session().State.Guilds {
+		p.guildMap[guild.ID] = make(MemberMap)
 	}
 
-	return nil
+	// add listeners
+	p.dc.Session().AddHandler(p.MessageCreate)
 
 }
 

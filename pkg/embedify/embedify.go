@@ -2,8 +2,14 @@ package embedify
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/z4vr/subayai/internal/static"
 	"time"
+)
+
+const (
+	ColorEmbedRed     = 0xd32f2f
+	ColorEmbedDefault = 0x249ff2
+	ColorEmbedGreen   = 0x8bc34a
+	ColorEmbedYellow  = 0xffeb3b
 )
 
 // EmbedBuilder provides a builder pattern to
@@ -14,7 +20,7 @@ type EmbedBuilder struct {
 
 // New returns a fresh EmbedBuilder.
 func New() *EmbedBuilder {
-	return &EmbedBuilder{&discordgo.MessageEmbed{Color: static.ColorEmbedDefault}}
+	return &EmbedBuilder{&discordgo.MessageEmbed{Color: ColorEmbedDefault}}
 }
 
 func (e *EmbedBuilder) SetTitle(title string) *EmbedBuilder {
@@ -33,17 +39,17 @@ func (e *EmbedBuilder) SetURL(url string) *EmbedBuilder {
 }
 
 func (e *EmbedBuilder) SetError() *EmbedBuilder {
-	e.emb.Color = static.ColorEmbedRed
+	e.emb.Color = ColorEmbedRed
 	return e
 }
 
 func (e *EmbedBuilder) SetSuccess() *EmbedBuilder {
-	e.emb.Color = static.ColorEmbedGreen
+	e.emb.Color = ColorEmbedGreen
 	return e
 }
 
 func (e *EmbedBuilder) SetWarning() *EmbedBuilder {
-	e.emb.Color = static.ColorEmbedYellow
+	e.emb.Color = ColorEmbedYellow
 	return e
 }
 

@@ -77,7 +77,7 @@ func main() {
 		logrus.Info("Shutting down Discord connection ...")
 		dc.Close()
 	}()
-	err = lp.Open()
+	lp.Open()
 	if err != nil {
 		logrus.WithError(err).Fatal("Leveling connection failed")
 	}

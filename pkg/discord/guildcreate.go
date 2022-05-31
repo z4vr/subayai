@@ -6,16 +6,17 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/pkg/database"
-	"github.com/z4vr/subayai/pkg/discordutils"
 )
 
 type GuildCreateEvent struct {
-	db  database.Database
-	cfg Config
+	dc  *Discord
+	db  *database.Database
+	cfg *Config
 }
 
-func NewGuildCreateEvent(db database.Database, cfg Config) *GuildCreateEvent {
+func NewGuildCreateEvent(dc *Discord, db *database.Database, cfg *Config) *GuildCreateEvent {
 	return &GuildCreateEvent{
+		dc:  dc,
 		db:  db,
 		cfg: cfg,
 	}
@@ -31,7 +32,7 @@ func (g *GuildCreateEvent) HandlerCreate(s *discordgo.Session, e *discordgo.Guil
 	}
 
 	if len(s.State.Guilds) >= limit {
-		_, err := discordutils.SendMessageDM(s, e.OwnerID,
+		_, err := g.dc.SendMessageDM(e.OwnerID,
 			fmt.Sprintf("Sorry, the instance owner disallowed me to join more than %d guilds.", limit))
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{

@@ -1,25 +1,17 @@
 package leveling
 
 import (
+	"github.com/z4vr/subayai/pkg/database/dberr"
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
 
-type LevelingHandlers struct {
-	lp *Provider
-}
-
-func NewLevelingHandlers(lp *Provider) *LevelingHandlers {
-	return &LevelingHandlers{
-		lp: lp,
-	}
-}
-
-func (l *LevelingHandlers) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate) {
+func (p *Provider) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate) {
 
 	var (
 		botMessageChannelID string
@@ -40,14 +32,8 @@ func (l *LevelingHandlers) MessageCreate(s *discordgo.Session, e *discordgo.Mess
 		return
 	}
 
-	levelData, err = l.lp.Get(e.Author.ID, e.GuildID)
-	if err != nil {
-		return
-	}
-
-	// In case of a new user, we need to create a new entry in the database
-	// and the guildMal.lp.
-	if levelData == nil {
+	levelData, err = p.Get(e.Author.ID, e.GuildID)
+	if err != nil && err == dberr.ErrNotFound {
 		levelData = &LevelData{
 			UserID:    e.Author.ID,
 			GuildID:   e.GuildID,
@@ -55,17 +41,16 @@ func (l *LevelingHandlers) MessageCreate(s *discordgo.Session, e *discordgo.Mess
 			CurrentXP: 0,
 			TotalXP:   0,
 		}
-		l.lp.Set(e.Author.ID, e.GuildID, levelData)
-		l.lp.SaveToDB(levelData)
+		p.Set(e.Author.ID, e.GuildID, levelData)
+		p.SaveToDB(levelData)
 	}
 
-	// Now calulate the Xl.lp and level ul.lp if needed.
 	earnedXP := rand.Intn(60) + 25
 	levelup := levelData.AddXP(earnedXP, false)
 
 	// If the user leveled ul.lp, we need to send a message to the channel
 	if levelup {
-		botMessageChannelID, err = l.lp.db.GetGuildBotMessageChannelID(e.GuildID)
+		botMessageChannelID, err = p.db.GetGuildBotMessageChannelID(e.GuildID)
 		if err != nil {
 			return
 		} else if botMessageChannelID == "" {
@@ -86,8 +71,7 @@ func (l *LevelingHandlers) MessageCreate(s *discordgo.Session, e *discordgo.Mess
 		}
 	}
 
-	// Save the ul.lpdated level data to the database.
-	err = l.lp.SaveToDB(levelData)
+	err = p.SaveToDB(levelData)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"guildID": levelData.GuildID,
@@ -97,5 +81,115 @@ func (l *LevelingHandlers) MessageCreate(s *discordgo.Session, e *discordgo.Mess
 	}
 
 	return
+
+}
+
+func (p *Provider) VoiceUpdate(s *discordgo.Session, e *discordgo.VoiceStateUpdate) {
+	// check if the member is a bot
+	member, err := p.dc.GetMember(e.GuildID, e.UserID)
+	if err != nil {
+		logrus.
+			WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
+			}).
+			Error("Failed to get member")
+		return
+	}
+
+	if member.User.Bot {
+		return
+	}
+
+	var (
+		afkChannelID         string = "empty"
+		lastSessionID        string = ""
+		lastSessionTimestamp int64  = 0
+		nowTimestamp         int64  = time.Now().Unix()
+	)
+
+	afkChannelID, err = p.db.GetGuildAFKChannelID(e.GuildID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+		}).WithError(err).Error("Failed to get afk channel id")
+	}
+	lastSessionID, err = p.db.GetLastVoiceSessionID(e.GuildID, e.UserID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+			"userID":  e.UserID,
+		}).WithError(err).Error("Failed to get last session id")
+	}
+	lastSessionTimestamp, err = p.db.GetLastVoiceSessionTimestamp(e.GuildID, e.UserID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+			"userID":  e.UserID,
+		}).WithError(err).Error("Failed to get last session timestamp")
+	}
+
+	// scenario: user freshly joined voice channel, or rejoined from afk channel
+	if e.BeforeUpdate == nil || e.BeforeUpdate.ChannelID == afkChannelID {
+		// update our last records
+		lastSessionID = e.SessionID
+		lastSessionTimestamp = nowTimestamp
+
+		// save them to db
+		err = p.db.SetLastVoiceSessionID(e.GuildID, e.UserID, lastSessionID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
+			}).WithError(err).Error("Failed to set last session id")
+		}
+		err = p.db.SetLastVoiceSessionTimestamp(e.GuildID, e.UserID, lastSessionTimestamp)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
+			}).WithError(err).Error("Failed to set last session timestamp")
+		}
+
+	}
+
+	// scenario: user left voice channel
+	if e.VoiceState.ChannelID == "" && e.VoiceState.SessionID == lastSessionID ||
+		e.VoiceState.ChannelID == afkChannelID && e.VoiceState.SessionID == lastSessionID {
+		// reward the leveling for the time spent in voice
+		levelData, err := p.Get(e.UserID, e.GuildID)
+		if err != nil && err == dberr.ErrNotFound {
+			levelData := &LevelData{
+				UserID:    e.UserID,
+				GuildID:   e.GuildID,
+				Level:     0,
+				CurrentXP: 0,
+				TotalXP:   0,
+			}
+			p.Set(e.UserID, e.GuildID, levelData)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"userID":  e.UserID,
+					"guildID": e.GuildID,
+				}).WithError(err).Error("Failed to add user to level map")
+			}
+		}
+
+		earnedXP := rand.Intn(60) + 25
+		levelup := levelData.AddXP(earnedXP, false)
+
+		err = p.SaveToDB(levelData)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  e.UserID,
+			}).WithError(err).Error("Failed to update user leveling")
+		}
+
+		if levelup {
+			// TODO: send a message to the user or to the bot channel
+		}
+
+	}
 
 }

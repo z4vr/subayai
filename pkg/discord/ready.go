@@ -3,14 +3,16 @@ package discord
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/discordutils"
 )
 
 type ReadyEvent struct {
+	dc *Discord
 }
 
-func NewReadyEvent() *ReadyEvent {
-	return &ReadyEvent{}
+func NewReadyEvent(dc *Discord) *ReadyEvent {
+	return &ReadyEvent{
+		dc: dc,
+	}
 }
 
 func (l *ReadyEvent) Handler(s *discordgo.Session, e *discordgo.Ready) {
@@ -22,5 +24,5 @@ func (l *ReadyEvent) Handler(s *discordgo.Session, e *discordgo.Ready) {
 		"id":       e.User.ID,
 		"username": e.User.String(),
 	}).Info("Signed in as:")
-	logrus.Infof("Invite link: %s", discordutils.GetInviteLink(e.User.ID))
+	logrus.Infof("Invite link: %s", l.dc.GetInviteLink())
 }
