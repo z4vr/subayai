@@ -68,13 +68,13 @@ func main() {
 	logrus.WithField("typ", cfg.Database.Type).Info("Database initialized")
 
 	// Discord & Leveling
-	dc, err := discord.New(cfg.Discord, db)
-	if err != nil {
-		logrus.WithError(err).Fatal("Discord initialization failed")
-	}
-	lp := leveling.New(dc, db)
+	lp := leveling.New(db)
 	if lp == nil {
 		logrus.Fatal("Leveling initialization failed")
+	}
+	dc, err := discord.New(cfg.Discord, db, lp)
+	if err != nil {
+		logrus.WithError(err).Fatal("Discord initialization failed")
 	}
 	err = dc.Open()
 	if err != nil {
@@ -84,18 +84,6 @@ func main() {
 	defer func() {
 		logrus.Info("Shutting down Discord connection ...")
 		dc.Close()
-	}()
-	lp.Open()
-	if err != nil {
-		logrus.WithError(err).Fatal("Leveling connection failed")
-	}
-	logrus.Info("Leveling map initialized")
-	defer func() {
-		logrus.Info("Shutting down leveling map ...")
-		err := lp.Close()
-		if err != nil {
-			logrus.WithError(err).Fatal("Leveling map shutdown failed -> check database entrys for corruption")
-		}
 	}()
 
 	block()

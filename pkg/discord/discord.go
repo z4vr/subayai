@@ -2,10 +2,12 @@ package discord
 
 import (
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"github.com/z4vr/subayai/pkg/database"
 	"strconv"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/z4vr/subayai/pkg/database"
+	"github.com/z4vr/subayai/pkg/leveling"
 )
 
 var (
@@ -27,15 +29,17 @@ type Discord struct {
 	session *discordgo.Session
 	config  Config
 	db      database.Database
+	lp      *leveling.Provider
 }
 
-func New(c Config, db database.Database) (*Discord, error) {
+func New(c Config, db database.Database, lp *leveling.Provider) (*Discord, error) {
 	var t Discord
 	var err error
 
 	t.config = c
 	t.db = db
 	t.session, err = discordgo.New("Bot " + c.Token)
+	t.lp = lp
 
 	t.session.Identify.Intents = discordgo.MakeIntent(Intents)
 
@@ -47,12 +51,7 @@ func New(c Config, db database.Database) (*Discord, error) {
 }
 
 func (d *Discord) Open() error {
-
-	d.session.AddHandler(NewReadyEvent(d).Handler)
-	d.session.AddHandler(NewGuildCreateEvent(d, &d.db, &d.config).HandlerCreate)
-	d.session.AddHandler(NewGuildMemberAddEvent(d.db).HandlerAutoRole)
-
-	return d.session.Open()
+	return d.Session().Open()
 }
 
 func (d *Discord) Close() {

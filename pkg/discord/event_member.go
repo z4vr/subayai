@@ -3,23 +3,12 @@ package discord
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/database"
 	"github.com/z4vr/subayai/pkg/database/dberr"
 	"github.com/z4vr/subayai/pkg/stringutils"
 )
 
-type GuildMemberAddEvent struct {
-	db database.Database
-}
-
-func NewGuildMemberAddEvent(db database.Database) *GuildMemberAddEvent {
-	return &GuildMemberAddEvent{
-		db: db,
-	}
-}
-
-func (g *GuildMemberAddEvent) HandlerAutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
-	autoroleIDs, err := g.db.GetGuildAutoroleIDs(e.GuildID)
+func (d *Discord) HandlerAutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
+	autoroleIDs, err := d.db.GetGuildAutoroleIDs(e.GuildID)
 	if err != nil && err == dberr.ErrNotFound {
 		logrus.WithField("guildID", e.GuildID).Warn("no autoroles found")
 	}
@@ -40,7 +29,7 @@ func (g *GuildMemberAddEvent) HandlerAutoRole(s *discordgo.Session, e *discordgo
 				newAutoRoleIDs = append(newAutoRoleIDs, rid)
 			}
 		}
-		err = g.db.SetGuildAutoroleIDs(e.GuildID, newAutoRoleIDs)
+		err = d.db.SetGuildAutoroleIDs(e.GuildID, newAutoRoleIDs)
 		if err != nil {
 			logrus.WithError(err).WithField("guildID", e.GuildID).WithField("userID",
 				e.User.ID).Error("Failed updating auto role settings")

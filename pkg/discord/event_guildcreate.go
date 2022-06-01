@@ -6,24 +6,9 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/database"
 )
 
-type GuildCreateEvent struct {
-	dc  *Discord
-	db  *database.Database
-	cfg *Config
-}
-
-func NewGuildCreateEvent(dc *Discord, db *database.Database, cfg *Config) *GuildCreateEvent {
-	return &GuildCreateEvent{
-		dc:  dc,
-		db:  db,
-		cfg: cfg,
-	}
-}
-
-func (g *GuildCreateEvent) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) {
+func (d *Discord) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) {
 
 	// check if the joinedAt is older than the time
 	if e.JoinedAt.Unix() <= time.Now().Unix() {
@@ -31,13 +16,13 @@ func (g *GuildCreateEvent) HandlerCreate(s *discordgo.Session, e *discordgo.Guil
 		return
 	}
 
-	limit := g.cfg.GuildLimit
+	limit := d.config.GuildLimit
 	if limit == -1 {
 		return
 	}
 
 	if len(s.State.Guilds) >= limit {
-		_, err := g.dc.SendMessageDM(e.OwnerID,
+		_, err := d.SendMessageDM(e.OwnerID,
 			fmt.Sprintf("Sorry, the instance owner disallowed me to join more than %d guilds.", limit))
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{

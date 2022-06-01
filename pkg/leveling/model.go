@@ -8,6 +8,11 @@ type LevelData struct {
 	Level     int
 }
 
-type GuildMap map[string]MemberMap
-
-type MemberMap map[string]*LevelData
+type DatabaseFunctions interface {
+	SetUserCurrentXP(userID, guildID string, currentXP int) error
+	GetUserCurrentXP(userID, guildID string) (int, error)
+	SetUserTotalXP(userID, guildID string, totalXP int) error
+	GetUserTotalXP(userID, guildID string) (int, error)
+	SetUserLevel(userID, guildID string, level int) error
+	GetUserLevel(userID, guildID string) (int, error)
+}
