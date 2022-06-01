@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
@@ -24,7 +25,11 @@ func NewGuildCreateEvent(dc *Discord, db *database.Database, cfg *Config) *Guild
 
 func (g *GuildCreateEvent) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) {
 
-	// TODO: log earlier guild joins to prevent triggering this e
+	// check if the joinedAt is older than the time
+	if e.JoinedAt.Unix() <= time.Now().Unix() {
+		fmt.Println(1)
+		return
+	}
 
 	limit := g.cfg.GuildLimit
 	if limit == -1 {
@@ -48,7 +53,5 @@ func (g *GuildCreateEvent) HandlerCreate(s *discordgo.Session, e *discordgo.Guil
 		}
 
 	}
-
-	return
 
 }

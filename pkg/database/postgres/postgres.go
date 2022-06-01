@@ -3,10 +3,10 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"github.com/z4vr/subayai/pkg/database/dberr"
 	"strings"
 
 	_ "github.com/lib/pq"
+	"github.com/z4vr/subayai/pkg/database/dberr"
 )
 
 type PGMiddleware struct {
@@ -31,7 +31,7 @@ func (p *PGMiddleware) setup() (err error) {
 		"bot_message_channel_id" varchar (25) NOT NULL DEFAULT '',
 		"level_up_message" text DEFAULT 'Well done {user}, your Level of wasting time just advanced to {leveling}!',
 		"afk_channel_id" varchar (25) NOT NULL DEFAULT '',
-		"autorole_ids" varchar (25) NOT NULL DEFAULT '',
+		"autorole_ids" text DEFAULT '',
 		PRIMARY KEY ("guild_id"));
 	`)
 	if err != nil {
@@ -51,13 +51,12 @@ func (p *PGMiddleware) setup() (err error) {
 	// create leveling table
 	_, err = tx.Exec(`
 	CREATE TABLE IF NOT EXISTS "leveling" (
-		"entry_id" serial NOT NULL,
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
 		"leveling" integer NOT NULL DEFAULT 0,
 		"current_xp" integer NOT NULL DEFAULT 0,
 		"total_xp" integer NOT NULL DEFAULT 0,
-		PRIMARY KEY ("entry_id"));
+		PRIMARY KEY ("user_id"));
 	`)
 	if err != nil {
 		return

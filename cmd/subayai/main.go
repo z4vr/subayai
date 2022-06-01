@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"io"
 	"os"
 	"os/signal"
 	"runtime/pprof"
@@ -23,12 +24,19 @@ var (
 func main() {
 	flag.Parse()
 
+	logFile, err := os.OpenFile("./subayai.log", os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	mw := io.MultiWriter(os.Stdout, logFile)
+
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     true,
+		ForceColors:     false,
 		TimestampFormat: "02-01-2006 15:04:05",
 		FullTimestamp:   true,
 	})
+	logrus.SetOutput(mw)
 
 	// Config
 	cfg, err := config.Parse(*flagConfigPath, "SUBAYAI_", config.DefaultConfig)
