@@ -9,7 +9,7 @@ func (d *LevelData) NeededXP() int {
 	return 5*int(math.Pow(float64(d.Level), 2)) + (50 * d.Level) + 100 - d.CurrentXP
 }
 
-// AddXP adds XP to the user recursively until there is
+// LevelUp adds XP to the user recursively until there is
 // no more XP to add
 func (d *LevelData) LevelUp(earnedXP int, levelup bool) bool {
 	neededXP := d.NeededXP()
