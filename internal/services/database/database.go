@@ -2,7 +2,7 @@ package database
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/database/postgres"
+	"github.com/z4vr/subayai/internal/services/database/postgres"
 )
 
 // Database is the interface for a database driver.

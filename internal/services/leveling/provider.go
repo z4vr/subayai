@@ -2,7 +2,7 @@ package leveling
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/database"
+	"github.com/z4vr/subayai/internal/services/database"
 )
 
 type Provider struct {

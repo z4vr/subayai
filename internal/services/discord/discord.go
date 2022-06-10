@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/z4vr/subayai/pkg/database"
-	"github.com/z4vr/subayai/pkg/leveling"
+	"github.com/z4vr/subayai/internal/services/database"
+	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
 var (
@@ -28,8 +28,6 @@ var (
 type Discord struct {
 	session *discordgo.Session
 	config  Config
-	db      database.Database
-	lp      *leveling.Provider
 }
 
 func New(c Config, db database.Database, lp *leveling.Provider) (*Discord, error) {
@@ -37,10 +35,7 @@ func New(c Config, db database.Database, lp *leveling.Provider) (*Discord, error
 	var err error
 
 	t.config = c
-	t.db = db
 	t.session, err = discordgo.New("Bot " + c.Token)
-	t.lp = lp
-
 	t.session.Identify.Intents = discordgo.MakeIntent(Intents)
 
 	if err != nil {

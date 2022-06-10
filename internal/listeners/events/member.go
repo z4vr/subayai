@@ -1,14 +1,14 @@
-package discord
+package events
 
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/database/dberr"
+	"github.com/z4vr/subayai/internal/services/database/dberr"
 	"github.com/z4vr/subayai/pkg/stringutils"
 )
 
-func (d *Discord) HandlerAutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
-	autoroleIDs, err := d.db.GetGuildAutoroleIDs(e.GuildID)
+func (h *EventHandler) HandlerAutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
+	autoroleIDs, err := h.db.GetGuildAutoroleIDs(e.GuildID)
 	if err != nil && err == dberr.ErrNotFound {
 		logrus.WithField("guildID", e.GuildID).Warn("no autoroles found")
 	}
@@ -29,7 +29,7 @@ func (d *Discord) HandlerAutoRole(s *discordgo.Session, e *discordgo.GuildMember
 				newAutoRoleIDs = append(newAutoRoleIDs, rid)
 			}
 		}
-		err = d.db.SetGuildAutoroleIDs(e.GuildID, newAutoRoleIDs)
+		err = h.db.SetGuildAutoroleIDs(e.GuildID, newAutoRoleIDs)
 		if err != nil {
 			logrus.WithError(err).WithField("guildID", e.GuildID).WithField("userID",
 				e.User.ID).Error("Failed updating auto role settings")

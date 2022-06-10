@@ -12,7 +12,7 @@ import (
 	"github.com/lukasl-dev/waterlink/v2/track"
 	"github.com/lukasl-dev/waterlink/v2/track/query"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/discord"
+	"github.com/z4vr/subayai/internal/services/discord"
 )
 
 func New(dc *discord.Discord, c Config) (*Waterlink, error) {

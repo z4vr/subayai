@@ -1,4 +1,4 @@
-package discord
+package events
 
 import (
 	"math/rand"
@@ -8,11 +8,11 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"github.com/z4vr/subayai/pkg/database/dberr"
-	"github.com/z4vr/subayai/pkg/leveling"
+	"github.com/z4vr/subayai/internal/services/database/dberr"
+	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
-func (d *Discord) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate) {
+func (h *EventHandler) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate) {
 
 	var (
 		levelData *leveling.LevelData
@@ -31,7 +31,7 @@ func (d *Discord) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate
 		return
 	}
 
-	lastMessageTimestamp, err := d.db.GetLastMessageTimestamp(e.GuildID, e.Author.ID)
+	lastMessageTimestamp, err := h.db.GetLastMessageTimestamp(e.GuildID, e.Author.ID)
 	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithError(err).Error("Failed to get last message timestamp")
 		return
@@ -41,7 +41,7 @@ func (d *Discord) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate
 		return
 	}
 
-	levelData, err = d.lp.FetchFromDB(e.GuildID, e.Author.ID)
+	levelData, err = h.lp.FetchFromDB(e.GuildID, e.Author.ID)
 	if err != nil && err == dberr.ErrNotFound {
 		levelData = &leveling.LevelData{
 			UserID:    e.Author.ID,
@@ -50,13 +50,13 @@ func (d *Discord) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate
 			CurrentXP: 0,
 			TotalXP:   0,
 		}
-		d.lp.SaveToDB(levelData)
+		h.lp.SaveToDB(levelData)
 	}
 
 	earnedXP := rand.Intn(60) + 25
 	levelup := levelData.LevelUp(earnedXP, false)
 
-	err = d.lp.SaveToDB(levelData)
+	err = h.lp.SaveToDB(levelData)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"guildID": levelData.GuildID,
@@ -67,10 +67,10 @@ func (d *Discord) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate
 
 	// If the user leveled up, we need to send a message to the channel
 	if levelup {
-		levelUpMessage, err := d.db.GetGuildLevelUpMessage(e.GuildID)
+		levelUpMessage, err := h.db.GetGuildLevelUpMessage(e.GuildID)
 		if err != nil && err == dberr.ErrNotFound {
 			logrus.WithError(err).Warn("Failed to get level up message")
-			err = d.db.SetGuildLevelUpMessage(e.GuildID,
+			err = h.db.SetGuildLevelUpMessage(e.GuildID,
 				"Well done {user}, your Level of wasting time just advanced to {leveling}!")
 			if err != nil {
 				logrus.WithError(err).Warn("Failed to set level up message")
@@ -78,10 +78,10 @@ func (d *Discord) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate
 		} else if levelUpMessage == "" {
 			levelUpMessage = "Well done {user}, your Level of wasting time just advanced to {leveling}!"
 		}
-		botMessageChannelID, err := d.db.GetGuildBotMessageChannelID(e.GuildID)
+		botMessageChannelID, err := h.db.GetGuildBotMessageChannelID(e.GuildID)
 		if err != nil && err == dberr.ErrNotFound {
 			logrus.WithError(err).Warn("Failed to get bot message channel ID")
-			err = d.db.SetGuildBotMessageChannelID(e.GuildID, e.ChannelID)
+			err = h.db.SetGuildBotMessageChannelID(e.GuildID, e.ChannelID)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to set bot message channel ID")
 			}

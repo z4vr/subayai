@@ -1,8 +1,0 @@
-time="01-06-2022 12:41:27" level=info msg="Database initialized" typ=postgres
-time="01-06-2022 12:41:27" level=info msg="Discord connection initialized"
-time="01-06-2022 12:41:27" level=info msg="Leveling map initialized"
-time="01-06-2022 12:41:27" level=info msg="Signed in as:" id=965237600354992158 username="subayai#8209"
-time="01-06-2022 12:41:27" level=info msg="Invite link: https://discord.com/api/oauth2/authorize?client_id=965237600354992158&scope=bot%20applications.commands&permissions=268782608"
-time="01-06-2022 12:41:52" level=info msg="Shutting down leveling map ..."
-time="01-06-2022 12:41:52" level=info msg="Shutting down Discord connection ..."
-time="01-06-2022 12:41:53" level=info msg="Shutting down database connection ..."

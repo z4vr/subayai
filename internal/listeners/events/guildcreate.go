@@ -1,4 +1,4 @@
-package discord
+package events
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (d *Discord) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) {
+func (h *EventHandler) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) {
 
 	// check if the joinedAt is older than the time
 	if e.JoinedAt.Unix() <= time.Now().Unix() {
@@ -16,13 +16,13 @@ func (d *Discord) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) 
 		return
 	}
 
-	limit := d.config.GuildLimit
+	limit := h.cfg.GuildLimit
 	if limit == -1 {
 		return
 	}
 
 	if len(s.State.Guilds) >= limit {
-		_, err := d.SendMessageDM(e.OwnerID,
+		_, err := h.d.SendMessageDM(e.OwnerID,
 			fmt.Sprintf("Sorry, the instance owner disallowed me to join more than %d guilds.", limit))
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{
