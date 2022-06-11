@@ -19,3 +19,7 @@ config.toml
 
 # binaries
 bin/
+
+# ide settings
+.idea/
+.vscode/
