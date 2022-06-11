@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/sirupsen/logrus"
+	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/services/database/postgres"
 )
 
@@ -56,16 +57,16 @@ type Database interface {
 	Close()
 }
 
-func New(cfg Config) Database {
+func New(cfg config.Config) Database {
 	var db Database
 	var err error
 
-	switch cfg.Type {
+	switch cfg.Database.Type {
 	case "postgres":
 		db = new(postgres.PGMiddleware)
-		err = db.Connect(cfg.Postgres)
+		err = db.Connect(cfg.Database.Postgres)
 	default:
-		logrus.Fatalf("Unknown database type: %s", cfg.Type)
+		logrus.Fatalf("Unknown database type: %s", cfg.Database.Type)
 	}
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed connecting to database")

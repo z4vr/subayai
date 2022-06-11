@@ -1,4 +1,4 @@
-package events
+package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
@@ -7,7 +7,7 @@ import (
 	"github.com/z4vr/subayai/pkg/stringutils"
 )
 
-func (h *EventHandler) HandlerAutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
+func (h *EventHandler) AutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
 	autoroleIDs, err := h.db.GetGuildAutoroleIDs(e.GuildID)
 	if err != nil && err == dberr.ErrNotFound {
 		logrus.WithField("guildID", e.GuildID).Warn("no autoroles found")

@@ -1,4 +1,4 @@
-package events
+package discord
 
 import (
 	"math/rand"
@@ -12,7 +12,7 @@ import (
 	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
-func (h *EventHandler) MessageCreate(s *discordgo.Session, e *discordgo.MessageCreate) {
+func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCreate) {
 
 	var (
 		levelData *leveling.LevelData
@@ -31,7 +31,7 @@ func (h *EventHandler) MessageCreate(s *discordgo.Session, e *discordgo.MessageC
 		return
 	}
 
-	lastMessageTimestamp, err := h.db.GetLastMessageTimestamp(e.GuildID, e.Author.ID)
+	lastMessageTimestamp, err := h.db.GetLastMessageTimestamp(e.Author.ID, e.GuildID)
 	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithError(err).Error("Failed to get last message timestamp")
 		return
@@ -41,7 +41,7 @@ func (h *EventHandler) MessageCreate(s *discordgo.Session, e *discordgo.MessageC
 		return
 	}
 
-	levelData, err = h.lp.FetchFromDB(e.GuildID, e.Author.ID)
+	levelData, err = h.lp.FetchFromDB(e.Author.ID, e.GuildID)
 	if err != nil && err == dberr.ErrNotFound {
 		levelData = &leveling.LevelData{
 			UserID:    e.Author.ID,
@@ -62,6 +62,15 @@ func (h *EventHandler) MessageCreate(s *discordgo.Session, e *discordgo.MessageC
 			"guildID": levelData.GuildID,
 			"userID":  levelData.UserID,
 		}).WithError(err).Error("Failed to save level data to DB")
+		return
+	}
+
+	err = h.db.SetLastMessageTimestamp(e.Author.ID, e.GuildID, time.Now().Unix())
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": levelData.GuildID,
+			"userID":  levelData.UserID,
+		}).WithError(err).Error("Failed to save last message timestamp to DB")
 		return
 	}
 

@@ -1,11 +1,11 @@
-package events
+package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
 
-func (h *EventHandler) Handler(s *discordgo.Session, e *discordgo.Ready) {
+func (h *EventHandler) Ready(s *discordgo.Session, e *discordgo.Ready) {
 	err := s.UpdateListeningStatus("slash commands [WIP]")
 	if err != nil {
 		return

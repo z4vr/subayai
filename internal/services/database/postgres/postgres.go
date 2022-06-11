@@ -69,8 +69,8 @@ func (p *PGMiddleware) setup() (err error) {
 		"entry_id" serial NOT NULL,
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
-		"last_guild_message" timestamp NOT NULL,
-		"last_voice_session" timestamp NOT NULL,
+		"last_guild_message" bigint NOT NULL DEFAULT 0,
+		"last_voice_session" bigint NOT NULL DEFAULT 0,
 		PRIMARY KEY ("entry_id"));
 	`)
 	if err != nil {
@@ -83,8 +83,8 @@ func (p *PGMiddleware) setup() (err error) {
 		"entry_id" serial NOT NULL,
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
-		"last_guild_message" varchar (25) NOT NULL,
-		"last_voice_session" varchar (25) NOT NULL,
+		"last_guild_message" varchar (25) NOT NULL DEFAULT '',
+		"last_voice_session" varchar (25) NOT NULL DEFAULT '',
 		PRIMARY KEY ("entry_id"));
 	`)
 	if err != nil {

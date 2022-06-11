@@ -1,4 +1,4 @@
-package events
+package discord
 
 import (
 	"fmt"
@@ -8,15 +8,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *EventHandler) HandlerCreate(s *discordgo.Session, e *discordgo.GuildCreate) {
+func (h *EventHandler) GuildLimit(s *discordgo.Session, e *discordgo.GuildCreate) {
 
 	// check if the joinedAt is older than the time
 	if e.JoinedAt.Unix() <= time.Now().Unix() {
-		fmt.Println(1)
 		return
 	}
 
-	limit := h.cfg.GuildLimit
+	limit := h.cfg.Discord.GuildLimit
 	if limit == -1 {
 		return
 	}

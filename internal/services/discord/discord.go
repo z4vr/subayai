@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/services/database"
 	"github.com/z4vr/subayai/internal/services/leveling"
 )
@@ -27,20 +28,28 @@ var (
 
 type Discord struct {
 	session *discordgo.Session
-	config  Config
+	config  config.Config
 }
 
-func New(c Config, db database.Database, lp *leveling.Provider) (*Discord, error) {
+func New(c config.Config, db database.Database, lp *leveling.Provider) (*Discord, error) {
 	var t Discord
 	var err error
 
 	t.config = c
-	t.session, err = discordgo.New("Bot " + c.Token)
+	t.session, err = discordgo.New("Bot " + c.Discord.Token)
 	t.session.Identify.Intents = discordgo.MakeIntent(Intents)
 
 	if err != nil {
 		return nil, err
 	}
+
+	eh := NewEventHandler(&t, lp, db, c)
+
+	t.session.AddHandler(eh.Ready)
+	t.session.AddHandler(eh.MessageLeveling)
+	t.session.AddHandler(eh.AutoRole)
+	t.session.AddHandler(eh.GuildLimit)
+	t.session.AddHandler(eh.VoiceLeveling)
 
 	return &t, nil
 }
@@ -55,10 +64,6 @@ func (d *Discord) Close() {
 
 func (d *Discord) Session() *discordgo.Session {
 	return d.session
-}
-
-func (d *Discord) AddHandler(f func()) {
-	d.session.AddHandler(f)
 }
 
 func (d *Discord) GetInviteLink() string {

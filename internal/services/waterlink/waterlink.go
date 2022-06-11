@@ -12,22 +12,23 @@ import (
 	"github.com/lukasl-dev/waterlink/v2/track"
 	"github.com/lukasl-dev/waterlink/v2/track/query"
 	"github.com/sirupsen/logrus"
+	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/services/discord"
 )
 
-func New(dc *discord.Discord, c Config) (*Waterlink, error) {
+func New(dc *discord.Discord, c config.Config) (*Waterlink, error) {
 	var w Waterlink
 	var err error
 
 	w.dc = dc
-	w.address = c.Host
+	w.address = c.Waterlink.Host
 	w.creds = waterlink.Credentials{
-		Authorization: c.Password,
+		Authorization: c.Waterlink.Password,
 		UserID:        snowflake.MustParse(w.dc.Session().State.User.ID),
 		ResumeKey:     "subayaiSession",
 	}
 
-	w.client, err = waterlink.NewClient(fmt.Sprintf("http://%s", c.Host), w.creds)
+	w.client, err = waterlink.NewClient(fmt.Sprintf("http://%s", c.Waterlink.Host), w.creds)
 	if err != nil {
 		return nil, err
 	}

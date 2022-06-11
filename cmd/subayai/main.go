@@ -54,7 +54,7 @@ func main() {
 	}
 
 	// Database
-	db := database.New(cfg.Database)
+	db := database.New(cfg)
 	if err != nil {
 		logrus.WithError(err).Fatal("Database initialization failed")
 	}
@@ -69,7 +69,7 @@ func main() {
 	if lp == nil {
 		logrus.Fatal("Leveling initialization failed")
 	}
-	dc, err := discord.New(cfg.Discord, db, lp)
+	dc, err := discord.New(cfg, db, lp)
 	if err != nil {
 		logrus.WithError(err).Fatal("Discord initialization failed")
 	}

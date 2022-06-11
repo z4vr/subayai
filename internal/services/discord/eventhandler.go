@@ -1,12 +1,12 @@
-package events
+package discord
 
 import (
+	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/services/database"
-	"github.com/z4vr/subayai/internal/services/discord"
 	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
-func New(d *discord.Discord, lp *leveling.Provider, db database.Database, cfg discord.Config) *EventHandler {
+func NewEventHandler(d *Discord, lp *leveling.Provider, db database.Database, cfg config.Config) *EventHandler {
 	return &EventHandler{
 		d:   d,
 		lp:  lp,
@@ -16,8 +16,8 @@ func New(d *discord.Discord, lp *leveling.Provider, db database.Database, cfg di
 }
 
 type EventHandler struct {
-	d   *discord.Discord
+	d   *Discord
 	lp  *leveling.Provider
 	db  database.Database
-	cfg discord.Config
+	cfg config.Config
 }

@@ -1,4 +1,4 @@
-package events
+package discord
 
 import (
 	"strconv"
@@ -11,7 +11,7 @@ import (
 	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
-func (h *EventHandler) VoiceUpdate(s *discordgo.Session, e *discordgo.VoiceStateUpdate) {
+func (h *EventHandler) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceStateUpdate) {
 	// check if the member is a bot
 	member, err := h.d.GetMember(e.GuildID, e.UserID)
 	if err != nil {
