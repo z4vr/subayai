@@ -6,13 +6,13 @@ var DefaultConfig = Config{
 		OwnerID:    "",
 		GuildLimit: -1,
 	},
-	Logging: Logging{
+	Logrus: Logrus{
 		Level:  "info",
 		Colors: true,
 	},
 	Database: Database{
 		Type: "postgres",
-		Postgres: DBCreds{
+		DBCreds: DBCreds{
 			Host: "localhost",
 			Port: 5432,
 		},
@@ -29,14 +29,14 @@ type Discord struct {
 	GuildLimit int
 }
 
-type Logging struct {
+type Logrus struct {
 	Level  string
 	Colors bool
 }
 
 type Database struct {
-	Type     string
-	Postgres DBCreds
+	Type    string
+	DBCreds DBCreds
 }
 
 type DBCreds struct {
@@ -54,7 +54,7 @@ type Waterlink struct {
 
 type Config struct {
 	Discord   Discord
-	Logging   Logging
+	Logrus    Logrus
 	Database  Database
 	Waterlink Waterlink
 }

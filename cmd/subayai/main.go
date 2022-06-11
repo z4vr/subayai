@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"runtime/pprof"
@@ -16,7 +17,7 @@ import (
 )
 
 var (
-	flagConfigPath = flag.String("config", "config.yaml", "Path to config file")
+	flagConfigPath = flag.String("config", "config.toml", "Path to config file")
 	flagCPUProfile = flag.String("cpuprofile", "", "Path to write CPU profile")
 )
 
@@ -29,14 +30,15 @@ func main() {
 		logrus.WithError(err).Fatal("Config parsing failed")
 	}
 
-	level, err := logrus.ParseLevel(cfg.Logging.Level)
+	level, err := logrus.ParseLevel(cfg.Logrus.Level)
 	if err != nil {
 		level = logrus.ErrorLevel
 	}
 
 	logrus.SetLevel(level)
+	fmt.Println(cfg.Logrus.Colors)
 	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     cfg.Logging.Colors,
+		ForceColors:     cfg.Logrus.Colors,
 		TimestampFormat: "02-01-2006 15:04:05",
 		FullTimestamp:   true,
 	})

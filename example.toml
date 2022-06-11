@@ -1,0 +1,22 @@
+[discord]
+token = ""
+ownerid = ""
+guildlimit = -1
+
+[logrus]
+level = "error"
+colors = false
+
+[database]
+type = ""
+
+[database.dbcreds]
+host = "localhost"
+port = 0
+database = ""
+username = ""
+password = ""
+
+[waterlink]
+host = ""
+password = ""

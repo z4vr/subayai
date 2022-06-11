@@ -64,7 +64,7 @@ func New(cfg config.Config) Database {
 	switch cfg.Database.Type {
 	case "postgres":
 		db = new(postgres.PGMiddleware)
-		err = db.Connect(cfg.Database.Postgres)
+		err = db.Connect(cfg.Database.DBCreds)
 	default:
 		logrus.Fatalf("Unknown database type: %s", cfg.Database.Type)
 	}
