@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *EventHandler) Ready(s *discordgo.Session, e *discordgo.Ready) {
+func (d *Discord) Ready(s *discordgo.Session, e *discordgo.Ready) {
 	err := s.UpdateListeningStatus("slash commands [WIP]")
 	if err != nil {
 		return
@@ -14,5 +14,5 @@ func (h *EventHandler) Ready(s *discordgo.Session, e *discordgo.Ready) {
 		"id":       e.User.ID,
 		"username": e.User.String(),
 	}).Info("Signed in as:")
-	logrus.Infof("Invite link: %s", h.d.GetInviteLink())
+	logrus.Infof("Invite link: %s", d.GetInviteLink())
 }

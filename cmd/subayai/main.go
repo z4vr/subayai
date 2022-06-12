@@ -9,12 +9,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/services/database"
 	"github.com/z4vr/subayai/internal/services/discord"
-	"github.com/z4vr/subayai/internal/services/leveling"
-
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -75,11 +73,7 @@ func main() {
 	logrus.WithField("type", cfg.Database.Type).Info("Database initialized")
 
 	// Discord & Leveling
-	lp := leveling.New(db)
-	if lp == nil {
-		logrus.Fatal("Leveling initialization failed")
-	}
-	dc, err := discord.New(cfg, db, lp)
+	dc, err := discord.New(cfg, db)
 	if err != nil {
 		logrus.WithError(err).Fatal("Discord initialization failed")
 	}

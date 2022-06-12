@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"github.com/z4vr/subayai/internal/util/math"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -9,14 +10,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/internal/services/database/dberr"
-	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
-func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCreate) {
+func (d *Discord) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCreate) {
 
 	var (
-		levelData *leveling.LevelData
-		err       error
+		err error
 	)
 
 	if e.Author.ID == s.State.User.ID {
@@ -31,7 +30,7 @@ func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.Messag
 		return
 	}
 
-	lastMessageTimestamp, err := h.db.GetLastMessageTimestamp(e.Author.ID, e.GuildID)
+	lastMessageTimestamp, err := d.db.GetLastMessageTimestamp(e.Author.ID, e.GuildID)
 	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithFields(logrus.Fields{
 			"guildID": e.GuildID,
@@ -43,44 +42,88 @@ func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.Messag
 		return
 	}
 
-	levelData, err = h.lp.FetchFromDB(e.Author.ID, e.GuildID)
-	if err != nil && err == dberr.ErrNotFound {
-		err := h.lp.SaveToDB(levelData)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"guildID": e.GuildID,
-				"userID":  e.Author.ID,
-			}).WithError(err).Error("Failed to save level data")
-		}
+	currentLevel, err := d.db.GetUserLevel(e.Author.ID, e.GuildID)
+	if err != nil && err != dberr.ErrNotFound {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+			"userID":  e.Author.ID,
+		}).WithError(err).Error("Failed to get user level")
+		return
+	} else if err == dberr.ErrNotFound {
+		currentLevel = 0
+	}
+	currentXP, err := d.db.GetUserCurrentXP(e.Author.ID, e.GuildID)
+	if err != nil && err != dberr.ErrNotFound {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+			"userID":  e.Author.ID,
+		}).WithError(err).Error("Failed to get user current xp")
+		return
+	} else if err == dberr.ErrNotFound {
+		currentXP = 0
+	}
+	totalXP, err := d.db.GetUserTotalXP(e.Author.ID, e.GuildID)
+	if err != nil && err != dberr.ErrNotFound {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+			"userID":  e.Author.ID,
+		}).WithError(err).Error("Failed to get user total xp")
+		return
+	} else if err == dberr.ErrNotFound {
+		totalXP = 0
+	}
+
+	levelMap := map[string]int{
+		"level":     currentLevel,
+		"currentXP": currentXP,
+		"totalXP":   totalXP,
 	}
 
 	earnedXP := rand.Intn(60) + 25
-	levelup := levelData.LevelUp(earnedXP, false)
+	levelMap["currentXP"] += earnedXP
+	levelMap["totalXP"] += earnedXP
+	newLevel := math.CurrentLevel(levelMap["currentXP"], levelMap["level"])
 
-	err = h.lp.SaveToDB(levelData)
+	err = d.db.SetUserLevel(e.Author.ID, e.GuildID, newLevel)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"guildID": levelData.GuildID,
-			"userID":  levelData.UserID,
-		}).WithError(err).Error("Failed to save level data to DB")
+			"guildID": e.GuildID,
+			"userID":  e.Author.ID,
+		}).WithError(err).Error("Failed to set user level")
+		return
+	}
+	err = d.db.SetUserCurrentXP(e.Author.ID, e.GuildID, levelMap["currentXP"])
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+			"userID":  e.Author.ID,
+		}).WithError(err).Error("Failed to set user current xp")
+		return
+	}
+	err = d.db.SetUserTotalXP(e.Author.ID, e.GuildID, levelMap["totalXP"])
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+			"userID":  e.Author.ID,
+		}).WithError(err).Error("Failed to set user total xp")
 		return
 	}
 
-	err = h.db.SetLastMessageTimestamp(e.Author.ID, e.GuildID, time.Now().Unix())
+	err = d.db.SetLastMessageTimestamp(e.Author.ID, e.GuildID, time.Now().Unix())
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"guildID": levelData.GuildID,
-			"userID":  levelData.UserID,
+			"guildID": e.GuildID,
+			"userID":  e.Author.ID,
 		}).WithError(err).Error("Failed to save last message timestamp to DB")
 		return
 	}
 
-	// If the user leveled up, we need to send a message to the channel
-	if levelup {
-		levelUpMessage, err := h.db.GetGuildLevelUpMessage(e.GuildID)
+	if newLevel > levelMap["level"] {
+		levelMap["level"] = newLevel
+		levelUpMessage, err := d.db.GetGuildLevelUpMessage(e.GuildID)
 		if err != nil && err == dberr.ErrNotFound {
 			logrus.WithError(err).Warn("Failed to get level up message")
-			err = h.db.SetGuildLevelUpMessage(e.GuildID,
+			err = d.db.SetGuildLevelUpMessage(e.GuildID,
 				"Well done {user}, your Level of wasting time just advanced to {leveling}!")
 			if err != nil {
 				logrus.WithError(err).Warn("Failed to set level up message")
@@ -88,10 +131,10 @@ func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.Messag
 		} else if levelUpMessage == "" {
 			return
 		}
-		botMessageChannelID, err := h.db.GetGuildBotMessageChannelID(e.GuildID)
+		botMessageChannelID, err := d.db.GetGuildBotMessageChannelID(e.GuildID)
 		if err != nil && err == dberr.ErrNotFound {
 			logrus.WithError(err).Warn("Failed to get bot message channel ID")
-			err = h.db.SetGuildBotMessageChannelID(e.GuildID, e.ChannelID)
+			err = d.db.SetGuildBotMessageChannelID(e.GuildID, e.ChannelID)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to set bot message channel ID")
 			}
@@ -105,7 +148,7 @@ func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.Messag
 		}
 
 		levelUpMessage = strings.Replace(levelUpMessage, "{user}", e.Author.Mention(), -1)
-		levelUpMessage = strings.Replace(levelUpMessage, "{leveling}", strconv.Itoa(levelData.Level), -1)
+		levelUpMessage = strings.Replace(levelUpMessage, "{leveling}", strconv.Itoa(newLevel), -1)
 
 		_, err = s.ChannelMessageSend(botMessageChannelID, levelUpMessage)
 		if err != nil {

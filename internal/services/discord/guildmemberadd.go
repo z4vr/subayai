@@ -7,8 +7,8 @@ import (
 	"github.com/z4vr/subayai/pkg/stringutils"
 )
 
-func (h *EventHandler) AutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
-	autoroleIDs, err := h.db.GetGuildAutoroleIDs(e.GuildID)
+func (d *Discord) AutoRole(s *discordgo.Session, e *discordgo.GuildMemberAdd) {
+	autoroleIDs, err := d.db.GetGuildAutoroleIDs(e.GuildID)
 	if err != nil && err == dberr.ErrNotFound {
 		logrus.WithField("guildID", e.GuildID).Warn("no autoroles found")
 	}
@@ -29,7 +29,7 @@ func (h *EventHandler) AutoRole(s *discordgo.Session, e *discordgo.GuildMemberAd
 				newAutoRoleIDs = append(newAutoRoleIDs, rid)
 			}
 		}
-		err = h.db.SetGuildAutoroleIDs(e.GuildID, newAutoRoleIDs)
+		err = d.db.SetGuildAutoroleIDs(e.GuildID, newAutoRoleIDs)
 		if err != nil {
 			logrus.WithError(err).WithField("guildID", e.GuildID).WithField("userID",
 				e.User.ID).Error("Failed updating auto role settings")
