@@ -33,7 +33,9 @@ func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.Messag
 
 	lastMessageTimestamp, err := h.db.GetLastMessageTimestamp(e.Author.ID, e.GuildID)
 	if err != nil && err != dberr.ErrNotFound {
-		logrus.WithError(err).Error("Failed to get last message timestamp")
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.GuildID,
+		}).WithError(err).Error("Failed to get last message timestamp")
 		return
 	}
 
@@ -43,14 +45,13 @@ func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.Messag
 
 	levelData, err = h.lp.FetchFromDB(e.Author.ID, e.GuildID)
 	if err != nil && err == dberr.ErrNotFound {
-		levelData = &leveling.LevelData{
-			UserID:    e.Author.ID,
-			GuildID:   e.GuildID,
-			Level:     0,
-			CurrentXP: 0,
-			TotalXP:   0,
+		err := h.lp.SaveToDB(levelData)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  e.Author.ID,
+			}).WithError(err).Error("Failed to save level data")
 		}
-		h.lp.SaveToDB(levelData)
 	}
 
 	earnedXP := rand.Intn(60) + 25
@@ -85,7 +86,7 @@ func (h *EventHandler) MessageLeveling(s *discordgo.Session, e *discordgo.Messag
 				logrus.WithError(err).Warn("Failed to set level up message")
 			}
 		} else if levelUpMessage == "" {
-			levelUpMessage = "Well done {user}, your Level of wasting time just advanced to {leveling}!"
+			return
 		}
 		botMessageChannelID, err := h.db.GetGuildBotMessageChannelID(e.GuildID)
 		if err != nil && err == dberr.ErrNotFound {

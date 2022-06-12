@@ -84,7 +84,7 @@ func (p *PGMiddleware) setup() (err error) {
 		"user_id" varchar (25) NOT NULL,
 		"guild_id" varchar (25) NOT NULL,
 		"last_guild_message" varchar (25) NOT NULL DEFAULT '',
-		"last_voice_session" varchar (25) NOT NULL DEFAULT '',
+		"last_voice_session" varchar (40) NOT NULL DEFAULT '',
 		PRIMARY KEY ("entry_id"));
 	`)
 	if err != nil {
@@ -364,7 +364,7 @@ func (p *PGMiddleware) SetLastVoiceSessionTimestamp(userID, guildID string, time
 func (p *PGMiddleware) getDiscordIDsSetting(userID, guildID, setting string) (value string, err error) {
 
 	err = p.Db.QueryRow(`
-	SELECT `+setting+` FROM discord_ids WHERE user_id = $1 AND guild_id = $2;
+	SELECT `+setting+` FROM discordids WHERE user_id = $1 AND guild_id = $2;
 	`, userID, guildID).Scan(&value)
 
 	err = wrapNotFound(err)
@@ -375,7 +375,7 @@ func (p *PGMiddleware) getDiscordIDsSetting(userID, guildID, setting string) (va
 func (p *PGMiddleware) setDiscordIDsSetting(userID, guildID, setting string, value string) (err error) {
 
 	res, err := p.Db.Exec(`
-	UPDATE discord_ids SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
+	UPDATE discordids SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
 	`, value, userID, guildID)
 	if err != nil {
 		return
@@ -388,7 +388,7 @@ func (p *PGMiddleware) setDiscordIDsSetting(userID, guildID, setting string, val
 
 	if rows == 0 {
 		_, err = p.Db.Exec(`
-		INSERT INTO discord_ids (user_id, guild_id, `+setting+`) VALUES ($1, $2, $3);
+		INSERT INTO discordids (user_id, guild_id, `+setting+`) VALUES ($1, $2, $3);
 		`, userID, guildID, value)
 		if err != nil {
 			return

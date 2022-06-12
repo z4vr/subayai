@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"runtime/pprof"
 	"syscall"
+	"time"
 
 	"github.com/z4vr/subayai/internal/services/config"
 	"github.com/z4vr/subayai/internal/services/database"
@@ -22,6 +23,9 @@ var (
 )
 
 func main() {
+
+	rand.Seed(time.Now().UnixNano())
+
 	flag.Parse()
 
 	// Config
@@ -36,7 +40,6 @@ func main() {
 	}
 
 	logrus.SetLevel(level)
-	fmt.Println(cfg.Logrus.Colors)
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors:     cfg.Logrus.Colors,
 		TimestampFormat: "02-01-2006 15:04:05",
@@ -48,7 +51,12 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to create CPU profile file")
 		}
-		defer f.Close()
+		defer func(f *os.File) {
+			err := f.Close()
+			if err != nil {
+				logrus.Panic(err)
+			}
+		}(f)
 		if err := pprof.StartCPUProfile(f); err != nil {
 			logrus.WithError(err).Fatal("Failed to start CPU profile")
 		}

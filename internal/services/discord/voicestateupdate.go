@@ -8,20 +8,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/internal/services/database/dberr"
-	"github.com/z4vr/subayai/internal/services/leveling"
 )
 
 func (h *EventHandler) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceStateUpdate) {
 	// check if the member is a bot
-	member, err := h.d.GetMember(e.GuildID, e.UserID)
+	member, err := h.d.GetMember(e.VoiceState.UserID, e.VoiceState.GuildID)
 	if err != nil {
-		logrus.
-			WithFields(logrus.Fields{
-				"guildID": e.GuildID,
-				"userID":  e.UserID,
-			}).
-			Error("Failed to get member")
-		return
+		logrus.WithFields(logrus.Fields{
+			"guildID": e.VoiceState.GuildID,
+			"userID":  e.VoiceState.UserID,
+		}).WithError(err).Error("Failed to get guild member")
 	}
 
 	if member.User.Bot {
@@ -29,52 +25,52 @@ func (h *EventHandler) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceSta
 	}
 
 	var (
-		afkChannelID         string = "empty"
-		lastSessionID        string = ""
-		lastSessionTimestamp int64  = 0
-		nowTimestamp         int64  = time.Now().Unix()
+		afkChannelID               = "empty"
+		lastSessionID              = ""
+		lastSessionTimestamp int64 = 0
+		nowTimestamp               = time.Now().Unix()
 	)
 
-	afkChannelID, err = h.db.GetGuildAFKChannelID(e.GuildID)
-	if err != nil {
+	afkChannelID, err = h.db.GetGuildAFKChannelID(e.VoiceState.GuildID)
+	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithFields(logrus.Fields{
-			"guildID": e.GuildID,
+			"guildID": e.VoiceState.GuildID,
 		}).WithError(err).Error("Failed to get afk channel id")
 	}
-	lastSessionID, err = h.db.GetLastVoiceSessionID(e.GuildID, e.UserID)
-	if err != nil {
+	lastSessionID, err = h.db.GetLastVoiceSessionID(member.User.ID, e.VoiceState.GuildID)
+	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithFields(logrus.Fields{
-			"guildID": e.GuildID,
-			"userID":  e.UserID,
+			"guildID": e.VoiceState.GuildID,
+			"userID":  member.User.ID,
 		}).WithError(err).Error("Failed to get last session id")
 	}
-	lastSessionTimestamp, err = h.db.GetLastVoiceSessionTimestamp(e.GuildID, e.UserID)
-	if err != nil {
+	lastSessionTimestamp, err = h.db.GetLastVoiceSessionTimestamp(member.User.ID, e.VoiceState.GuildID)
+	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithFields(logrus.Fields{
-			"guildID": e.GuildID,
-			"userID":  e.UserID,
+			"guildID": e.VoiceState.GuildID,
+			"userID":  member.User.ID,
 		}).WithError(err).Error("Failed to get last session timestamp")
 	}
 
 	// scenario: user freshly joined voice channel, or rejoined from afk channel
 	if e.BeforeUpdate == nil || e.BeforeUpdate.ChannelID == afkChannelID {
 		// update our last records
-		lastSessionID = e.SessionID
+		lastSessionID = e.VoiceState.SessionID
 		lastSessionTimestamp = nowTimestamp
 
 		// save them to db
-		err = h.db.SetLastVoiceSessionID(e.GuildID, e.UserID, lastSessionID)
+		err = h.db.SetLastVoiceSessionID(member.User.ID, e.VoiceState.GuildID, lastSessionID)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"guildID": e.GuildID,
-				"userID":  e.UserID,
+				"guildID": e.VoiceState.GuildID,
+				"userID":  member.User.ID,
 			}).WithError(err).Error("Failed to set last session id")
 		}
-		err = h.db.SetLastVoiceSessionTimestamp(e.GuildID, e.UserID, lastSessionTimestamp)
+		err = h.db.SetLastVoiceSessionTimestamp(member.User.ID, e.VoiceState.GuildID, lastSessionTimestamp)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"guildID": e.GuildID,
-				"userID":  e.UserID,
+				"guildID": e.VoiceState.GuildID,
+				"userID":  member.User.ID,
 			}).WithError(err).Error("Failed to set last session timestamp")
 		}
 
@@ -84,21 +80,14 @@ func (h *EventHandler) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceSta
 	if e.VoiceState.ChannelID == "" && e.VoiceState.SessionID == lastSessionID ||
 		e.VoiceState.ChannelID == afkChannelID && e.VoiceState.SessionID == lastSessionID {
 		// reward the leveling for the time spent in voice
-		levelData, err := h.lp.FetchFromDB(e.GuildID, e.UserID)
+		levelData, err := h.lp.FetchFromDB(member.User.ID, e.VoiceState.GuildID)
 		if err != nil && err == dberr.ErrNotFound {
-			levelData := &leveling.LevelData{
-				UserID:    e.UserID,
-				GuildID:   e.GuildID,
-				Level:     0,
-				CurrentXP: 0,
-				TotalXP:   0,
-			}
-			h.lp.SaveToDB(levelData)
+			err = h.lp.SaveToDB(levelData)
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
-					"userID":  e.UserID,
-					"guildID": e.GuildID,
-				}).WithError(err).Error("Failed to add user to level map")
+					"guildID": e.VoiceState.GuildID,
+					"userID":  member.User.ID,
+				}).WithError(err).Error("Failed to save level data")
 			}
 		}
 
@@ -109,7 +98,7 @@ func (h *EventHandler) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceSta
 		err = h.lp.SaveToDB(levelData)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"guildID": e.GuildID,
+				"guildID": e.VoiceState.GuildID,
 				"userID":  member.User.ID,
 			}).WithError(err).Error("Failed to update user leveling")
 		}
@@ -121,16 +110,26 @@ func (h *EventHandler) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceSta
 				err = h.db.SetGuildLevelUpMessage(e.GuildID,
 					"Well done {user}, your Level of wasting time just advanced to {leveling}!")
 				if err != nil {
-					logrus.WithError(err).Warn("Failed to set level up message")
+					logrus.WithError(err).Error("Failed to set level up message")
 				}
 			} else if levelUpMessage == "" {
-				levelUpMessage = "Well done {user}, your Level of wasting time just advanced to {leveling}!"
+				return
 			}
 			botMessageChannelID, err := h.db.GetGuildBotMessageChannelID(e.GuildID)
-			if err != nil {
-				return
+			if err != nil && err == dberr.ErrNotFound {
+				logrus.WithFields(logrus.Fields{
+					"guildID": e.GuildID,
+				}).WithError(err).Error("Failed to get bot message channel id")
+
 			} else if botMessageChannelID == "" {
-				botMessageChannelID = e.ChannelID
+				botMessageChannel := h.d.FindGuildTextChannel(e.GuildID)
+				if botMessageChannel == nil {
+					logrus.WithFields(logrus.Fields{
+						"guildID": e.GuildID,
+					}).Error("No bot message channel found")
+					return
+				}
+				botMessageChannelID = botMessageChannel.ID
 			}
 
 			levelUpMessage = strings.Replace(levelUpMessage, "{user}", member.Mention(), -1)

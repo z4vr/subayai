@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 
@@ -39,6 +40,9 @@ func New(c config.Config, db database.Database, lp *leveling.Provider) (*Discord
 	t.session, err = discordgo.New("Bot " + c.Discord.Token)
 	t.session.Identify.Intents = discordgo.MakeIntent(Intents)
 
+	t.session.State.TrackMembers = true
+	t.session.State.TrackVoice = true
+
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +63,10 @@ func (d *Discord) Open() error {
 }
 
 func (d *Discord) Close() {
-	d.session.Close()
+	err := d.session.Close()
+	if err != nil {
+		logrus.Panic(err)
+	}
 }
 
 func (d *Discord) Session() *discordgo.Session {
@@ -98,24 +105,24 @@ func (d *Discord) SendEmbedMessageDM(userID string, embed *discordgo.MessageEmbe
 	return
 }
 
-func (d *Discord) GetMember(userID, guildID string) (discordgo.Member, error) {
+func (d *Discord) GetMember(userID, guildID string) (*discordgo.Member, error) {
 	member, err := d.session.State.Member(guildID, userID)
 	if err == nil {
-		return *member, nil
+		return member, nil
 	}
 
 	member, err = d.session.GuildMember(guildID, userID)
-	return *member, err
+	return member, err
 }
 
-func (d *Discord) GetGuild(id string) (discordgo.Guild, error) {
+func (d *Discord) GetGuild(id string) (*discordgo.Guild, error) {
 	guild, err := d.session.State.Guild(id)
 	if err == nil {
-		return *guild, nil
+		return guild, nil
 	}
 
 	guild, err = d.session.Guild(id)
-	return *guild, err
+	return guild, err
 }
 
 func (d *Discord) UsersInGuildVoice(guildID string) ([]string, error) {
@@ -143,4 +150,18 @@ func (d *Discord) FindUserVS(userID string) (discordgo.VoiceState, bool) {
 		}
 	}
 	return discordgo.VoiceState{}, false
+}
+
+func (d *Discord) FindGuildTextChannel(guildID string) *discordgo.Channel {
+	guild, err := d.GetGuild(guildID)
+	if err != nil {
+		return &discordgo.Channel{}
+	}
+	for _, c := range guild.Channels {
+		if c.Type == discordgo.ChannelTypeGuildText {
+			// check if bot has permission to write in channel
+			return c
+		}
+	}
+	return &discordgo.Channel{}
 }

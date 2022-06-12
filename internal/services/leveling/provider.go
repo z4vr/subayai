@@ -3,6 +3,7 @@ package leveling
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/internal/services/database"
+	"github.com/z4vr/subayai/internal/services/database/dberr"
 )
 
 type Provider struct {
@@ -55,28 +56,46 @@ func (p *Provider) FetchFromDB(userID, guildID string) (*LevelData, error) {
 	var err error
 
 	levelData.CurrentXP, err = p.db.GetUserCurrentXP(userID, guildID)
-	if err != nil {
+	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithFields(logrus.Fields{
 			"guildID": guildID,
 			"userID":  userID,
 		}).Error("Failed to fetch current XP from DB: ", err)
 		return nil, err
+	} else if err == dberr.ErrNotFound {
+		logrus.WithFields(logrus.Fields{
+			"guildID": guildID,
+			"userID":  userID,
+		}).Warn("Current XP not found in DB")
+		levelData.CurrentXP = 0
 	}
 	levelData.TotalXP, err = p.db.GetUserTotalXP(userID, guildID)
-	if err != nil {
+	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithFields(logrus.Fields{
 			"guildID": guildID,
 			"userID":  userID,
 		}).Error("Failed to fetch total XP from DB: ", err)
 		return nil, err
+	} else if err == dberr.ErrNotFound {
+		logrus.WithFields(logrus.Fields{
+			"guildID": guildID,
+			"userID":  userID,
+		}).Warn("Total XP not found in DB")
+		levelData.TotalXP = 0
 	}
 	levelData.Level, err = p.db.GetUserLevel(userID, guildID)
-	if err != nil {
+	if err != nil && err != dberr.ErrNotFound {
 		logrus.WithFields(logrus.Fields{
 			"guildID": guildID,
 			"userID":  userID,
 		}).Error("Failed to fetch level from DB: ", err)
 		return nil, err
+	} else if err == dberr.ErrNotFound {
+		logrus.WithFields(logrus.Fields{
+			"guildID": guildID,
+			"userID":  userID,
+		}).Warn("Current Level not found in DB")
+		levelData.Level = 0
 	}
 
 	return levelData, nil
