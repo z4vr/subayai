@@ -2,6 +2,11 @@ package main
 
 import (
 	"flag"
+	"github.com/sarulabs/di/v2"
+	"github.com/z4vr/subayai/internal/services/database"
+	"github.com/z4vr/subayai/internal/services/discord"
+	"github.com/z4vr/subayai/internal/services/slashcommands"
+	"github.com/zekrotja/ken"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -11,8 +16,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/z4vr/subayai/internal/services/config"
-	"github.com/z4vr/subayai/internal/services/database"
-	"github.com/z4vr/subayai/internal/services/discord"
 )
 
 var (
@@ -25,24 +28,6 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	flag.Parse()
-
-	// Config
-	cfg, err := config.Parse(*flagConfigPath, "SUBAYAI_", config.DefaultConfig)
-	if err != nil {
-		logrus.WithError(err).Fatal("Config parsing failed")
-	}
-
-	level, err := logrus.ParseLevel(cfg.Logrus.Level)
-	if err != nil {
-		level = logrus.ErrorLevel
-	}
-
-	logrus.SetLevel(level)
-	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     cfg.Logrus.Colors,
-		TimestampFormat: "02-01-2006 15:04:05",
-		FullTimestamp:   true,
-	})
 
 	if *flagCPUProfile != "" {
 		f, err := os.Create(*flagCPUProfile)
@@ -61,33 +46,91 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	// Database
-	db := database.New(cfg)
-	if err != nil {
-		logrus.WithError(err).Fatal("Database initialization failed")
-	}
-	defer func() {
-		logrus.Info("Shutting down database connection ...")
-		db.Close()
-	}()
-	logrus.WithField("type", cfg.Database.Type).Info("Database initialized")
+	diBuilder, err := di.NewBuilder()
 
-	// Discord & Leveling
-	dc, err := discord.New(cfg, db)
+	// Config
+	err = diBuilder.Add(di.Def{
+		Name: "config",
+		Build: func(ctn di.Container) (interface{}, error) {
+			return config.Parse(*flagConfigPath, "SUBAYAI_", config.DefaultConfig)
+		},
+	})
 	if err != nil {
-		logrus.WithError(err).Fatal("Discord initialization failed")
+		logrus.WithError(err).Fatal("Config parsing failed")
 	}
+
+	// Database
+	err = diBuilder.Add(di.Def{
+		Name: "database",
+		Build: func(ctn di.Container) (interface{}, error) {
+			return database.New(ctn)
+		},
+		Close: func(obj interface{}) error {
+			d := obj.(database.Database)
+			logrus.Info("Shutting down database connection...")
+			d.Close()
+			return nil
+		},
+	})
+	if err != nil && err.Error() == "unknown database driver" {
+		logrus.WithError(err).Fatal("Database creation failed, unknown driver")
+	} else if err != nil {
+		logrus.WithError(err).Fatal("Database creation failed")
+	}
+
+	// Discord
+	err = diBuilder.Add(di.Def{
+		Name: "discord",
+		Build: func(ctn di.Container) (interface{}, error) {
+			return discord.New(ctn)
+		},
+		Close: func(obj interface{}) error {
+			return obj.(*discord.Discord).Close()
+		},
+	})
+
+	// Ken
+	err = diBuilder.Add(di.Def{
+		Name: "ken",
+		Build: func(ctn di.Container) (interface{}, error) {
+			return slashcommands.New(ctn)
+		},
+		Close: func(obj interface{}) error {
+			return obj.(*ken.Ken).Unregister()
+		},
+	})
+
+	ctn := diBuilder.Build()
+
+	cfg := ctn.Get("config").(config.Config)
+	level, err := logrus.ParseLevel(cfg.Logrus.Level)
+	if err != nil {
+		level = logrus.ErrorLevel
+	}
+	logrus.SetLevel(level)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors:     cfg.Logrus.Colors,
+		TimestampFormat: "02-01-2006 15:04:05",
+		FullTimestamp:   true,
+	})
+
+	logrus.Info("Starting Subayai ...")
+
+	dc := ctn.Get("discord").(*discord.Discord)
 	err = dc.Open()
 	if err != nil {
-		logrus.WithError(err).Fatal("Discord connection failed")
+		logrus.WithError(err).Fatal("Failed to open Discord connection")
 	}
-	logrus.Info("Discord connection initialized")
-	defer func() {
-		logrus.Info("Shutting down Discord connection ...")
-		dc.Close()
-	}()
+
+	_ = ctn.Get("ken")
 
 	block()
+
+	err = ctn.DeleteWithSubContainers()
+	if err != nil {
+		return
+	}
+
 }
 
 func block() {

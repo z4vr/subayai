@@ -3,7 +3,7 @@ package discord
 import (
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"github.com/sarulabs/di/v2"
 	"strconv"
 	"time"
 
@@ -36,13 +36,16 @@ type Discord struct {
 	db      database.Database
 }
 
-func New(c config.Config, db database.Database) (*Discord, error) {
+func New(ctn di.Container) (*Discord, error) {
 	var t Discord
 	var err error
 
-	t.cfg = c
+	db := ctn.Get("database").(database.Database)
+	cfg := ctn.Get("config").(config.Config)
+
+	t.cfg = cfg
 	t.db = db
-	t.session, err = discordgo.New("Bot " + c.Discord.Token)
+	t.session, err = discordgo.New("Bot " + cfg.Discord.Token)
 
 	if err != nil {
 		return nil, err
@@ -67,11 +70,8 @@ func (d *Discord) Open() error {
 	return d.Session().Open()
 }
 
-func (d *Discord) Close() {
-	err := d.session.Close()
-	if err != nil {
-		logrus.Panic(err)
-	}
+func (d *Discord) Close() error {
+	return d.Session().Close()
 }
 
 func (d *Discord) Session() *discordgo.Session {

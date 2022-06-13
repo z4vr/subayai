@@ -20,7 +20,7 @@ func (d *Discord) GuildLimit(s *discordgo.Session, e *discordgo.GuildCreate) {
 		return
 	}
 
-	if len(s.State.Guilds) >= limit {
+	if len(s.State.Guilds) > limit {
 		_, err := d.SendMessageDM(e.OwnerID,
 			fmt.Sprintf("Sorry, the instance owner disallowed me to join more than %d guilds.", limit))
 		if err != nil {
