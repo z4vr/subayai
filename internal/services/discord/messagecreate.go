@@ -151,5 +151,29 @@ func (d *Discord) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCrea
 			}).WithError(err).Error("Failed to send level up message")
 			return
 		}
+
+		rewardRoleID, err := d.db.GetRewardRoleIDByLevel(e.GuildID, newLevel)
+		if err != nil && err == dberr.ErrNotFound {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"level":   newLevel,
+			}).WithError(err).Warn("Failed to get reward role ID")
+			return
+		}
+
+		err = d.AddRoleToUser(e.Author.ID, e.GuildID, rewardRoleID)
+		if err != nil && err != ErrUserHasRole {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  e.Author.ID,
+				"roleID":  rewardRoleID,
+			}).WithError(err).Error("Failed to add reward role to user")
+		} else if err == ErrUserHasRole {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  e.Author.ID,
+				"roleID":  rewardRoleID,
+			}).Info("User already has reward role")
+		}
 	}
 }

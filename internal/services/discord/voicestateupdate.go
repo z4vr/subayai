@@ -197,6 +197,29 @@ func (d *Discord) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceStateUpd
 					}
 				}
 			}
+			rewardRoleID, err := d.db.GetRewardRoleIDByLevel(e.GuildID, newLevel)
+			if err != nil && err == dberr.ErrNotFound {
+				logrus.WithFields(logrus.Fields{
+					"guildID": e.GuildID,
+					"level":   newLevel,
+				}).WithError(err).Warn("Failed to get reward role ID")
+				return
+			}
+
+			err = d.AddRoleToUser(e.VoiceState.UserID, e.GuildID, rewardRoleID)
+			if err != nil && err != ErrUserHasRole {
+				logrus.WithFields(logrus.Fields{
+					"guildID": e.GuildID,
+					"userID":  e.VoiceState.UserID,
+					"roleID":  rewardRoleID,
+				}).WithError(err).Error("Failed to add reward role to user")
+			} else if err == ErrUserHasRole {
+				logrus.WithFields(logrus.Fields{
+					"guildID": e.GuildID,
+					"userID":  e.VoiceState.UserID,
+					"roleID":  rewardRoleID,
+				}).Info("User already has reward role")
+			}
 		}
 	}
 }

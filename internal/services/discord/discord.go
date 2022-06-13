@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"strconv"
@@ -24,6 +25,9 @@ var (
 		discordgo.PermissionManageChannels
 
 	Intents = discordgo.IntentsAll
+
+	ErrUserHasRole    = errors.New("user has role")
+	ErrUserHasNotRole = errors.New("user has not role")
 )
 
 type Discord struct {
@@ -165,4 +169,43 @@ func (d *Discord) FindGuildTextChannel(guildID string) *discordgo.Channel {
 		}
 	}
 	return &discordgo.Channel{}
+}
+
+func (d *Discord) AddRoleToUser(userID, guildID, roleID string) error {
+	member, err := d.GetMember(userID, guildID)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range member.Roles {
+		if r == roleID {
+			return ErrUserHasRole
+		}
+	}
+
+	err = d.session.GuildMemberRoleAdd(guildID, userID, roleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *Discord) RemoveRoleFromUser(userID, guildID, roleID string) error {
+	member, err := d.GetMember(userID, guildID)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range member.Roles {
+		if r == roleID {
+			err = d.session.GuildMemberRoleRemove(guildID, userID, roleID)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+		return ErrUserHasNotRole
+	}
+	return ErrUserHasNotRole
 }

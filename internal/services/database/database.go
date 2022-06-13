@@ -54,6 +54,9 @@ type Database interface {
 	GetLastVoiceSessionID(userID, guildID string) (id string, err error)
 	SetLastVoiceSessionID(userID, guildID string, id string) (err error)
 
+	GetRewardRoleIDByLevel(guildID string, level int) (id string, err error)
+	SetRewardRoleIDByLevel(guildID string, level int, id string) (err error)
+
 	Close()
 }
 

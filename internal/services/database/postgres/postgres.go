@@ -91,6 +91,15 @@ func (p *PGMiddleware) setup() (err error) {
 		return
 	}
 
+	// create rewardroles table
+	_, err = tx.Exec(`
+	CREATE TABLE IF NOT EXISTS "rewardroles" (
+	    "role_id" varchar (25) NOT NULL DEFAULT '',
+	    "guild_id" varchar (25) NOT NULL DEFAULT '',
+	    "level_required" integer NOT NULL DEFAULT 0,
+	    PRIMARY KEY ("role_id"));
+	`)
+
 	return tx.Commit()
 }
 
@@ -239,7 +248,7 @@ func (p *PGMiddleware) setUserSetting(userID, setting, value string) (err error)
 	return
 }
 
-func (p *PGMiddleware) getLevelSetting(userID, guildID, setting string) (value int, err error) {
+func (p *PGMiddleware) getLevelEntry(userID, guildID, setting string) (value int, err error) {
 
 	err = p.Db.QueryRow(`
 	SELECT `+setting+` FROM leveling WHERE user_id = $1 AND guild_id = $2;
@@ -250,7 +259,7 @@ func (p *PGMiddleware) getLevelSetting(userID, guildID, setting string) (value i
 	return
 }
 
-func (p *PGMiddleware) setLevelSetting(userID, guildID, setting string, value int) (err error) {
+func (p *PGMiddleware) setLevelEntry(userID, guildID, setting string, value int) (err error) {
 
 	res, err := p.Db.Exec(`
 	UPDATE leveling SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
@@ -277,32 +286,32 @@ func (p *PGMiddleware) setLevelSetting(userID, guildID, setting string, value in
 
 // GetUserLevel returns the leveling for the user
 func (p *PGMiddleware) GetUserLevel(userID, guildID string) (level int, err error) {
-	return p.getLevelSetting(userID, guildID, "leveling")
+	return p.getLevelEntry(userID, guildID, "leveling")
 }
 
 // SetUserLevel sets the leveling for the user
 func (p *PGMiddleware) SetUserLevel(userID, guildID string, level int) (err error) {
-	return p.setLevelSetting(userID, guildID, "leveling", level)
+	return p.setLevelEntry(userID, guildID, "leveling", level)
 }
 
 // GetUserCurrentXP returns the current leveling for the user
 func (p *PGMiddleware) GetUserCurrentXP(userID, guildID string) (xp int, err error) {
-	return p.getLevelSetting(userID, guildID, "current_xp")
+	return p.getLevelEntry(userID, guildID, "current_xp")
 }
 
 // SetUserCurrentXP sets the current leveling for the user
 func (p *PGMiddleware) SetUserCurrentXP(userID, guildID string, xp int) (err error) {
-	return p.setLevelSetting(userID, guildID, "current_xp", xp)
+	return p.setLevelEntry(userID, guildID, "current_xp", xp)
 }
 
 // GetUserTotalXP returns the total leveling for the user
 func (p *PGMiddleware) GetUserTotalXP(userID, guildID string) (xp int, err error) {
-	return p.getLevelSetting(userID, guildID, "total_xp")
+	return p.getLevelEntry(userID, guildID, "total_xp")
 }
 
 // SetUserTotalXP sets the total leveling for the user
 func (p *PGMiddleware) SetUserTotalXP(userID, guildID string, xp int) (err error) {
-	return p.setLevelSetting(userID, guildID, "total_xp", xp)
+	return p.setLevelEntry(userID, guildID, "total_xp", xp)
 }
 
 func (p *PGMiddleware) getTimestampSetting(userID, guildID, setting string) (value int64, err error) {
@@ -372,7 +381,7 @@ func (p *PGMiddleware) getDiscordIDsSetting(userID, guildID, setting string) (va
 	return
 }
 
-func (p *PGMiddleware) setDiscordIDsSetting(userID, guildID, setting string, value string) (err error) {
+func (p *PGMiddleware) setDiscordIDsSetting(userID, guildID, setting, value string) (err error) {
 
 	res, err := p.Db.Exec(`
 	UPDATE discordids SET `+setting+` = $1 WHERE user_id = $2 AND guild_id = $3;
@@ -403,7 +412,7 @@ func (p *PGMiddleware) GetLastMessageID(userID, guildID string) (id string, err 
 }
 
 // SetLastMessageID sets the last message id sent by the user
-func (p *PGMiddleware) SetLastMessageID(userID, guildID string, id string) (err error) {
+func (p *PGMiddleware) SetLastMessageID(userID, guildID, id string) (err error) {
 	return p.setDiscordIDsSetting(userID, guildID, "last_guild_message", id)
 }
 
@@ -413,8 +422,43 @@ func (p *PGMiddleware) GetLastVoiceSessionID(userID, guildID string) (id string,
 }
 
 // SetLastVoiceSessionID sets the last voice session id sent by the user
-func (p *PGMiddleware) SetLastVoiceSessionID(userID, guildID string, id string) (err error) {
+func (p *PGMiddleware) SetLastVoiceSessionID(userID, guildID, id string) (err error) {
 	return p.setDiscordIDsSetting(userID, guildID, "last_voice_session", id)
+}
+
+// GetRewardRoleIDByLevel returns the reward role id for the given level
+func (p *PGMiddleware) GetRewardRoleIDByLevel(guildID string, level int) (id string, err error) {
+
+	err = p.Db.QueryRow(`
+		SELECT role_id FROM rewardroles WHERE guild_id = $1 AND level_required = $2;
+	`, guildID, level).Scan(&id)
+
+	err = wrapNotFound(err)
+
+	return id, err
+}
+
+// SetRewardRoleIDByLevel sets the reward role id for the given level
+func (p *PGMiddleware) SetRewardRoleIDByLevel(guildID string, level int, id string) (err error) {
+
+	res, err := p.Db.Exec(`
+		UPDATE rewardroles SET role_id = $1 WHERE guild_id = $2 AND level_required = $3;
+	`, id, guildID, level)
+	if err != nil {
+		return
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return
+	}
+
+	if rows == 0 {
+		_, err = p.Db.Exec(`
+		INSERT INTO rewardroles (guild_id, level_required, role_id) VALUES ($1, $2, $3);
+		`, guildID, level, id)
+	}
+	return
 }
 
 func (p *PGMiddleware) Close() {
