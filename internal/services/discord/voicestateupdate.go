@@ -112,19 +112,46 @@ func (d *Discord) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceStateUpd
 			totalXP = 0
 		}
 
-		levelMap := map[string]int{
-			"level":     currentLevel,
-			"currentXP": currentXP,
-			"totalXP":   totalXP,
-		}
-
 		// reward the user 1 xp per minute spent in voice
 		earnedXP := int(nowTimestamp-lastSessionTimestamp) / 60
-		levelMap["currentXP"] += earnedXP
-		levelMap["totalXP"] += earnedXP
-		newLevel := math.CurrentLevel(levelMap["currentXP"], levelMap["level"])
+		totalXP += earnedXP
+		currentXP, newLevel := math.CurrentLevel(earnedXP, currentLevel, currentXP)
 
-		if newLevel > levelMap["level"] {
+		err = d.db.SetUserLevel(member.User.ID, e.GuildID, newLevel)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  member.User.ID,
+			}).WithError(err).Error("Failed to set user level")
+			return
+		}
+		err = d.db.SetUserCurrentXP(member.User.ID, e.GuildID, currentXP)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  member.User.ID,
+			}).WithError(err).Error("Failed to set user current xp")
+			return
+		}
+		err = d.db.SetUserTotalXP(member.User.ID, e.GuildID, totalXP)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  member.User.ID,
+			}).WithError(err).Error("Failed to set user total xp")
+			return
+		}
+
+		err = d.db.SetLastMessageTimestamp(member.User.ID, e.GuildID, time.Now().Unix())
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guildID": e.GuildID,
+				"userID":  member.User.ID,
+			}).WithError(err).Error("Failed to save last message timestamp to DB")
+			return
+		}
+
+		if newLevel > currentLevel {
 			levelUpMessage, err := d.db.GetGuildLevelUpMessage(e.GuildID)
 			if err != nil && err == dberr.ErrNotFound {
 				logrus.WithError(err).Warn("Failed to get level up message")
@@ -169,7 +196,6 @@ func (d *Discord) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceStateUpd
 						return
 					}
 				}
-
 			}
 		}
 	}

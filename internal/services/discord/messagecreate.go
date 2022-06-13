@@ -73,16 +73,9 @@ func (d *Discord) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCrea
 		totalXP = 0
 	}
 
-	levelMap := map[string]int{
-		"level":     currentLevel,
-		"currentXP": currentXP,
-		"totalXP":   totalXP,
-	}
-
 	earnedXP := rand.Intn(60) + 25
-	levelMap["currentXP"] += earnedXP
-	levelMap["totalXP"] += earnedXP
-	newLevel := math.CurrentLevel(levelMap["currentXP"], levelMap["level"])
+	totalXP += earnedXP
+	currentXP, newLevel := math.CurrentLevel(earnedXP, currentLevel, currentXP)
 
 	err = d.db.SetUserLevel(e.Author.ID, e.GuildID, newLevel)
 	if err != nil {
@@ -92,7 +85,7 @@ func (d *Discord) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCrea
 		}).WithError(err).Error("Failed to set user level")
 		return
 	}
-	err = d.db.SetUserCurrentXP(e.Author.ID, e.GuildID, levelMap["currentXP"])
+	err = d.db.SetUserCurrentXP(e.Author.ID, e.GuildID, currentXP)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"guildID": e.GuildID,
@@ -100,7 +93,7 @@ func (d *Discord) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCrea
 		}).WithError(err).Error("Failed to set user current xp")
 		return
 	}
-	err = d.db.SetUserTotalXP(e.Author.ID, e.GuildID, levelMap["totalXP"])
+	err = d.db.SetUserTotalXP(e.Author.ID, e.GuildID, totalXP)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"guildID": e.GuildID,
@@ -118,8 +111,7 @@ func (d *Discord) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCrea
 		return
 	}
 
-	if newLevel > levelMap["level"] {
-		levelMap["level"] = newLevel
+	if newLevel > currentLevel {
 		levelUpMessage, err := d.db.GetGuildLevelUpMessage(e.GuildID)
 		if err != nil && err == dberr.ErrNotFound {
 			logrus.WithError(err).Warn("Failed to get level up message")

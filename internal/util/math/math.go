@@ -4,18 +4,17 @@ package math
 
 import "math"
 
-// NeededXP returns the XP needed for the current level to level up
-func NeededXP(level int) int {
-	return 5*int(math.Pow(float64(level), 2)) + (50 * level) + 100
+// NeededXP returns the XP needed for the current level and current XP
+func NeededXP(level, currentXP int) int {
+	return 5*int(math.Pow(float64(level), 2)) + (50 * level) + 100 - currentXP
 }
 
-// CurrentLevel returns the current level of the user based on the total XP
-// and current level.
-func CurrentLevel(currentXP, level int) int {
-	neededXP := NeededXP(level)
-	if currentXP >= neededXP {
-		return CurrentLevel(currentXP-neededXP, level+1)
+// CurrentLevel returns the current level and xp of a user
+// after the earned XP is added to the current XP
+func CurrentLevel(earnedXP int, currentLevel, currentXP int) (int, int) {
+	if currentXP >= NeededXP(currentLevel, currentXP) {
+		return CurrentLevel(earnedXP-NeededXP(currentLevel, currentXP), currentLevel+1, 0)
 	} else {
-		return level
+		return currentXP + earnedXP, currentLevel
 	}
 }

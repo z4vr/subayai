@@ -39,14 +39,22 @@ func New(c config.Config, db database.Database) (*Discord, error) {
 	t.cfg = c
 	t.db = db
 	t.session, err = discordgo.New("Bot " + c.Discord.Token)
+
+	if err != nil {
+		return nil, err
+	}
+
 	t.session.Identify.Intents = discordgo.MakeIntent(Intents)
 
 	t.session.State.TrackMembers = true
 	t.session.State.TrackVoice = true
 
-	if err != nil {
-		return nil, err
-	}
+	// adding event handlers
+	t.session.AddHandler(t.Ready)
+	t.session.AddHandler(t.MessageLeveling)
+	t.session.AddHandler(t.VoiceLeveling)
+	t.session.AddHandler(t.AutoRole)
+	t.session.AddHandler(t.GuildLimit)
 
 	return &t, nil
 }
