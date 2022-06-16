@@ -5,8 +5,6 @@ import (
 	"github.com/sarulabs/di/v2"
 	"github.com/z4vr/subayai/internal/services/database"
 	"github.com/z4vr/subayai/internal/services/discord"
-	"github.com/z4vr/subayai/internal/services/slashcommands"
-	"github.com/zekrotja/ken"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -89,17 +87,6 @@ func main() {
 		},
 	})
 
-	// Ken
-	err = diBuilder.Add(di.Def{
-		Name: "ken",
-		Build: func(ctn di.Container) (interface{}, error) {
-			return slashcommands.New(ctn)
-		},
-		Close: func(obj interface{}) error {
-			return obj.(*ken.Ken).Unregister()
-		},
-	})
-
 	ctn := diBuilder.Build()
 
 	cfg := ctn.Get("config").(config.Config)
@@ -121,8 +108,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to open Discord connection")
 	}
-
-	_ = ctn.Get("ken")
 
 	block()
 
