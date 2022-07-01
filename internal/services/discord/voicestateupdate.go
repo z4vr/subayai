@@ -1,7 +1,7 @@
 package discord
 
 import (
-	"github.com/z4vr/subayai/internal/util/math"
+	"github.com/z4vr/subayai/internal/util"
 	"strconv"
 	"strings"
 	"time"
@@ -115,7 +115,7 @@ func (d *Discord) VoiceLeveling(s *discordgo.Session, e *discordgo.VoiceStateUpd
 		// reward the user 1 xp per minute spent in voice
 		earnedXP := int(nowTimestamp-lastSessionTimestamp) / 60
 		totalXP += earnedXP
-		currentXP, newLevel := math.CurrentLevel(earnedXP, currentLevel, currentXP)
+		currentXP, newLevel := util.CurrentLevel(earnedXP, currentLevel, currentXP)
 
 		err = d.db.SetUserLevel(member.User.ID, e.GuildID, newLevel)
 		if err != nil {

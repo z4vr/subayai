@@ -1,6 +1,4 @@
-// Package math includes some functions for math, like calculation experience needed for leveling
-// and so on.
-package math
+package util
 
 import "math"
 

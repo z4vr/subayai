@@ -1,7 +1,7 @@
 package discord
 
 import (
-	"github.com/z4vr/subayai/internal/util/math"
+	"github.com/z4vr/subayai/internal/util"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -75,7 +75,7 @@ func (d *Discord) MessageLeveling(s *discordgo.Session, e *discordgo.MessageCrea
 
 	earnedXP := rand.Intn(60) + 25
 	totalXP += earnedXP
-	currentXP, newLevel := math.CurrentLevel(earnedXP, currentLevel, currentXP)
+	currentXP, newLevel := util.CurrentLevel(earnedXP, currentLevel, currentXP)
 
 	err = d.db.SetUserLevel(e.Author.ID, e.GuildID, newLevel)
 	if err != nil {
